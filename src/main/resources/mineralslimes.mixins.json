@@ -1,0 +1,14 @@
+
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "snaypertihcreator.mineralslimes.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GuidebookLevelRendererMixin",
+    "GuideScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
