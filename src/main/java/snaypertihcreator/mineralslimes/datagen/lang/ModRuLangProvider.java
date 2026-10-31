@@ -7,11 +7,11 @@ import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.guide.SlimeContextTag;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotWater;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotWater;
 import snaypertihcreator.mineralslimes.common.items.ModCreativeTabs;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotEmpty;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotEntity;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEmpty;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEntity;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
 
 public class ModRuLangProvider extends LanguageProvider {

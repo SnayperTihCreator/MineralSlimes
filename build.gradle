@@ -44,6 +44,10 @@ runs {
         systemProperty 'forge.logging.console.level', 'debug'
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
         modSource project.sourceSets.main
+
+        jvmArgument '-Dfile.encoding=UTF-8'
+        jvmArgument '-Dstdout.encoding=UTF-8'
+        jvmArgument '-Dstderr.encoding=UTF-8'
     }
 
     client {

@@ -26,11 +26,10 @@ public final class VakPakPayload {
         @Override public @NotNull Type<Shoot> type() { return TYPE; }
     }
 
-    public record Vacuum() implements CustomPacketPayload{
-        public static final Vacuum INSTANCE = new Vacuum();
+    public record Vacuum(boolean start) implements CustomPacketPayload {
         public static final Type<Vacuum> TYPE = new Type<>(modLoc("vakpak_vacuum"));
-
-        public static final StreamCodec<ByteBuf, Vacuum> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+        public static final StreamCodec<ByteBuf, Vacuum> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.BOOL, Vacuum::start, Vacuum::new);
         @Override public @NotNull Type<Vacuum> type() { return TYPE; }
     }
 }

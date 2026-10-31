@@ -3,10 +3,12 @@ package snaypertihcreator.mineralslimes.common.items;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import snaypertihcreator.mineralslimes.MineralSlimes;
+import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 
 public final class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -25,10 +27,14 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> SLIMES_TAB =
             CREATIVE_MODE_TABS.register("slimes_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("ctabs.slimes_tab"))
+            .icon(() -> ModSlimes.PINK.iconEntity().getDefaultInstance())
             .displayItems((param, output) -> {
                 output.accept(ModItems.VAK_PAK);
 
-                for (var item : ModItems.ITEMS.getEntries())
-                    if (item.get().components().has(DataComponents.FOOD)) output.accept(item.get());
+                for (var holder : ModItems.ITEMS.getEntries()) {
+                    if (holder.get().components().has(DataComponents.FOOD)) output.accept(holder.get());
+                    if (holder.get() instanceof BlockItem item) output.accept(item);
+                    if (holder.get() instanceof CorralPartItem<?> item) output.accept(item);
+                }
             }).build());
 }

@@ -2,17 +2,20 @@ package snaypertihcreator.mineralslimes.datagen.lang;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.guide.SlimeContextTag;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotWater;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotType;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotWater;
 import snaypertihcreator.mineralslimes.common.items.ModCreativeTabs;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotEmpty;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakSlotEntity;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEmpty;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEntity;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
 
 public class ModEnLangProvider extends LanguageProvider {
     public ModEnLangProvider(PackOutput output) {
@@ -48,6 +51,25 @@ public class ModEnLangProvider extends LanguageProvider {
         add(VakPakSlotEntity.UNKNOWN_ENTITY, "Unnamed Entity");
         add(VakPakSlotWater.DISPLAY_NAME, "Water (%s/%s)");
 
+        for (var type : VakPakUpgradeType.values()) {
+            add(type.displayName(), switch (type) {
+                case SLOT_STACK   -> "Slot Stack";
+                case SLOT_COUNT   -> "Slot Count";
+                case LIQUID_SLOT  -> "Liquid Slot";
+                case WORLD_HARVEST -> "World Harvest";
+                case PULSE_WAVE   -> "Pulse Wave";
+                case LOOT_MUL     -> "Loot Multiplier";
+            });
+            add(type.levelName(0), switch (type) {
+                case SLOT_STACK   -> "Slot Stack %s/%s";
+                case SLOT_COUNT   -> "Slot Count %s/%s";
+                case LIQUID_SLOT  -> "Liquid Slot %s/%s";
+                case WORLD_HARVEST -> "World Harvest %s/%s";
+                case PULSE_WAVE   -> "Pulse Wave %s/%s";
+                case LOOT_MUL     -> "Loot Multiplier %s/%s";
+            });
+        }
+
         add(ModSlimes.PINK.slimeType().displayName(), "Pink Slime");
         add(ModSlimes.ROCKY.slimeType().displayName(), "Rocky Slime");
 
@@ -56,7 +78,9 @@ public class ModEnLangProvider extends LanguageProvider {
         add(SlimeContextTag.LIKE_FOODS_NONE, "None");
     }
 
-    public void add(Component text, String translationKey) {
-        add(text.getString(), translationKey);
+    public void add(Component text, String value) {
+        if (text.getContents() instanceof TranslatableContents tc)
+            add(tc.getKey(), value);
+        else add(text.getString(), value);
     }
 }

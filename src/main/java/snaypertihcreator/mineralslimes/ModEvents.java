@@ -9,7 +9,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
-import snaypertihcreator.mineralslimes.common.items.vakpak.VakPakItem;
+import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 
 import java.util.List;
 

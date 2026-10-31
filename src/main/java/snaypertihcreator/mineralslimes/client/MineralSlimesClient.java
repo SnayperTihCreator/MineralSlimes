@@ -1,6 +1,5 @@
 package snaypertihcreator.mineralslimes.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -9,6 +8,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -16,38 +16,50 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
+import snaypertihcreator.mineralslimes.client.block.CorralRenderer;
 import snaypertihcreator.mineralslimes.client.entity.SlimeRenderer;
 import snaypertihcreator.mineralslimes.client.item.VakPakRenderer;
+import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
 import snaypertihcreator.mineralslimes.client.models.VakPakModel;
 import snaypertihcreator.mineralslimes.client.texture.AnimatedTextureManager;
+import snaypertihcreator.mineralslimes.common.blockentity.ModBlockEntity;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
+import snaypertihcreator.mineralslimes.common.fance.ModPartTypes;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
-import snaypertihcreator.mineralslimes.common.items.vakpak.VakPakItem;
-import software.bernie.geckolib.renderer.GeoItemRenderer;
 
-import java.util.List;
-
-import static snaypertihcreator.mineralslimes.MineralSlimes.LOGGER;
-import static snaypertihcreator.mineralslimes.MineralSlimes.modLoc;
+import static snaypertihcreator.mineralslimes.client.models.FenceModelRegister.modelKey;
 
 @Mod(value = MineralSlimes.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = MineralSlimes.MODID, value = Dist.CLIENT)
 public class MineralSlimesClient {
-    public MineralSlimesClient(ModContainer container) {
+
+    public MineralSlimesClient(@NotNull ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
     @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        var slimes = List.of(ModSlimes.PINK, ModSlimes.ROCKY);
-
-        for (var slime: slimes)
-            event.registerEntityRenderer(slime.entityType(),
-                    context -> new SlimeRenderer<>(context, slime.slimeType()));
+    public static void onRegisterAdditional(ModelEvent.RegisterAdditional event){
+        for (var part: ModPartTypes.FENCE_PART_TYPE.getEntries())
+            event.register(modelKey(part.get().getModelId()));
     }
 
     @SubscribeEvent
-    public static void onRegisterExtensions(RegisterClientExtensionsEvent event) {
+    public static void onBakingCompleted(ModelEvent.BakingCompleted event){
+        FenceModelRegister.registerModel(event);
+    }
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        for (var slime: ModSlimes.all())
+            event.registerEntityRenderer(slime.entityType(), context -> new SlimeRenderer<>(context, slime.slimeType()));
+
+        event.registerBlockEntityRenderer(ModBlockEntity.CORRAL_BE.get(), CorralRenderer::new);
+    }
+
+
+
+    @SubscribeEvent
+    public static void onRegisterExtensions(@NotNull RegisterClientExtensionsEvent event) {
         event.registerItem(new IClientItemExtensions() {
             private VakPakRenderer renderer;
 

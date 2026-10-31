@@ -12,7 +12,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import snaypertihcreator.mineralslimes.MineralSlimes;
-import snaypertihcreator.mineralslimes.common.items.vakpak.VakPakItem;
+import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 
 @EventBusSubscriber(modid = MineralSlimes.MODID, value = Dist.CLIENT)
 public class ModNetworkingClient {
@@ -35,8 +35,9 @@ public class ModNetworkingClient {
                 event.setCanceled(true);
                 attackHeld = true;
                 fireOnce();
-            } else if (event.getAction() == InputConstants.RELEASE)
+            } else if (event.getAction() == InputConstants.RELEASE) {
                 attackHeld = false;
+            }
         }
     }
 
@@ -51,30 +52,30 @@ public class ModNetworkingClient {
 
         event.setSwingHand(false);
         event.setCanceled(true);
-        useHeld = true;
+        if (!useHeld) {
+            useHeld = true;
+            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(true));
+        }
     }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
-        long window = Minecraft.getInstance().getWindow().getWindow();
-
-        if (attackHeld && GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) != GLFW.GLFW_PRESS)
-            attackHeld = false;
-        if (useHeld && GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) != GLFW.GLFW_PRESS)
-            useHeld = false;
-
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        boolean holdingVakPak = player != null && mc.screen == null && player.getMainHandItem().getItem() instanceof VakPakItem;
+
+        if (attackHeld && !mc.options.keyAttack.isDown()) attackHeld = false;
+
+        boolean holdingVakPak = player != null && mc.screen == null
+                && player.getMainHandItem().getItem() instanceof VakPakItem;
 
         if (attackHeld) {
             if (!holdingVakPak) attackHeld = false;
             else fireOnce();
         }
 
-        if (useHeld) {
-            if (!holdingVakPak) useHeld = false;
-            else PacketDistributor.sendToServer(VakPakPayload.Vacuum.INSTANCE);
+        if (useHeld && (!mc.options.keyUse.isDown() || !holdingVakPak)) {
+            useHeld = false;
+            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(false));
         }
     }
 

@@ -57,12 +57,17 @@ public class SlimeRenderer<T extends AbstractSlimeEntity> extends AbstractSlimeR
 
     @Override
     protected @Nullable ResourceLocation getTextureForBone(GeoBone bone, T animatable) {
-        return FACE.equals(bone.getName()) ? moods.get(faceOf(animatable)) : null;
+        return FACE.equals(bone.getName()) ? moods.getOrDefault(faceOf(animatable), TEX_NORMAL) : null;
     }
 
     @Override
     protected int getColourForBone(GeoBone bone, T animatable) {
         if (FACE.equals(bone.getName())) return tint;
         return 0xFFFFFFFF;
+    }
+
+    @Override
+    protected @Nullable UvRect getUvRectForBone(GeoBone bone, T animatable, @org.jetbrains.annotations.Nullable ResourceLocation texture) {
+        return FACE.equals(bone.getName())? fullTexture(texture) : null;
     }
 }

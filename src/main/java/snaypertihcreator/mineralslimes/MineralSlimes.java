@@ -9,6 +9,8 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -22,13 +24,18 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
+import snaypertihcreator.mineralslimes.common.blockentity.ModBlockEntity;
+import snaypertihcreator.mineralslimes.common.blocks.ModBlocks;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
+import snaypertihcreator.mineralslimes.common.fance.ModPartTypes;
 import snaypertihcreator.mineralslimes.common.guide.SlimeContextTag;
 import snaypertihcreator.mineralslimes.common.guide.SlimeSceneElement;
 import snaypertihcreator.mineralslimes.common.items.ModCreativeTabs;
 import snaypertihcreator.mineralslimes.common.config.Config;
 import snaypertihcreator.mineralslimes.common.entity.ModEntities;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
+import snaypertihcreator.mineralslimes.common.recipes.ModRecipes;
+import snaypertihcreator.mineralslimes.datagen.ModRecipeProvider;
 import snaypertihcreator.mineralslimes.datagen.ModSlimeAnimationProvider;
 import snaypertihcreator.mineralslimes.datagen.lang.ModEnLangProvider;
 import snaypertihcreator.mineralslimes.datagen.tags.ModBlockTagsProvider;
@@ -45,29 +52,32 @@ public class MineralSlimes {
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final ResourceLocation GUIDE_ID = modLoc("wiki");
 
-    public MineralSlimes(IEventBus modEventBus, ModContainer modContainer) {
-        modEventBus.addListener(this::commonSetup);
+    public MineralSlimes(IEventBus modEventBus, @NotNull ModContainer modContainer) {
         ModDataComponents.COMPONENTS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModBlocks.BLOCKS.register(modEventBus);
+        ModPartTypes.FENCE_PART_TYPE.register(modEventBus);
+        ModBlockEntity.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModSlimes.SLIME_TYPE.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        ModRecipes.SERIALIZERS.register(modEventBus);
         NeoForge.EVENT_BUS.register(this);
         modEventBus.addListener(this::gatherData);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
-        Guide.builder(GUIDE_ID)
-                .folder("slimewiki")
+        Guide.builder(GUIDE_ID).folder("slimewiki")
                 .extension(TagCompiler.EXTENSION_POINT, new SlimeContextTag())
                 .extension(SceneElementTagCompiler.EXTENSION_POINT, new SlimeSceneElement())
                 .build();
     }
 
-    public static ResourceLocation modLoc(String path) {
+    @Contract("_ -> new")
+    public static @NotNull ResourceLocation modLoc(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 
-    private void gatherData(GatherDataEvent event) {
+    private void gatherData(@NotNull GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
         ExistingFileHelper helper = event.getExistingFileHelper();
@@ -84,10 +94,9 @@ public class MineralSlimes {
         generator.addProvider(includeServer, blockTags);
         generator.addProvider(includeServer, new ModItemTagsProvider(output, provider, blockTags.contentsGetter(), helper));
         generator.addProvider(includeServer, new ModEntityTagsProvider(output, provider, helper));
+        generator.addProvider(includeServer, new ModRecipeProvider(output, provider));
 
     }
-
-    private void commonSetup(FMLCommonSetupEvent event) {}
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {}

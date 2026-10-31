@@ -7,7 +7,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
@@ -20,11 +19,13 @@ import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
-import snaypertihcreator.mineralslimes.common.inventory.VakPakInventory;
-import snaypertihcreator.mineralslimes.common.items.vakpak.*;
+import snaypertihcreator.mineralslimes.common.items.VakPakItem;
+import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakInventory;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
 import snaypertihcreator.mineralslimes.common.network.VakPakPayload;
 
 import java.util.Set;
@@ -63,20 +64,20 @@ public class VakPakHud {
     private static long nameShowUntil = 0;
 
     @SubscribeEvent
-    public static void onGuiLayer(RenderGuiLayerEvent.Pre event){
+    public static void onGuiLayer(RenderGuiLayerEvent.Pre event) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if(player == null) return;
+        if (player == null) return;
         if (!(player.getMainHandItem().getItem() instanceof VakPakItem)) return;
         if (HIDDEN_LAYERS.contains(event.getName())) event.setCanceled(true);
     }
 
     @SubscribeEvent
-    public static void onRegisterLayers(RegisterGuiLayersEvent event) {
+    public static void onRegisterLayers(@NotNull RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, ID, VakPakHud::render);
     }
 
     @SubscribeEvent
-    public static void onRegisterKeys(RegisterKeyMappingsEvent event) {
+    public static void onRegisterKeys(@NotNull RegisterKeyMappingsEvent event) {
         event.register(VAKPAK_SCROLL_KEY);
     }
 
@@ -102,12 +103,13 @@ public class VakPakHud {
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof VakPakItem)) return;
 
-        VakPakInventory inv = stack.get(ModDataComponents.VAKPAK_INVENTORY);
-        if (inv == null) inv = new VakPakInventory();
+        VakPakInventory inv = VakPakItem.getInventory(stack);
+        inv.updateForUpgrades(stack.getOrDefault(ModDataComponents.VAKPAK_UPGRADES, VakPakUpgrades.EMPTY));
 
         int count = inv.size();
         int sel = inv.selectedIndex();
-        int totalWidth = count * SLOT_SIZE;
+
+        int totalWidth = count * SLOT_SIZE + (count - 1) * SLOT_GAP;
         int x = gfx.guiWidth() / 2 - totalWidth / 2;
         int y = gfx.guiHeight() - 21;
         int stride = SLOT_SIZE + SLOT_GAP;
@@ -118,14 +120,11 @@ public class VakPakHud {
         }
 
         if (Util.getMillis() < nameShowUntil) {
-            Component name = inv.getSlot(sel).displayName();
-            if (name != null) {
-                gfx.drawCenteredString(mc.font, name, gfx.guiWidth() / 2, y - 12, 0xFFFFFF);
-            }
+            gfx.drawCenteredString(mc.font, inv.getSlot(sel).displayName(), gfx.guiWidth() / 2, y - 12, 0xFFFFFF);
         }
 
         if (VAKPAK_SCROLL_KEY.isDown()) {
-            int sx = x + (count+2) * stride;
+            int sx = x + count * stride;
             gfx.blit(TEXTURE, sx, y, 0, 0, 20, 20, TEXTURE_SIZE, TEXTURE_SIZE);
         }
 
@@ -133,7 +132,7 @@ public class VakPakHud {
             int sx = x + i * stride;
 
             gfx.blit(TEXTURE, sx, y, 0, 20, SLOT_SIZE, SLOT_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
-            VakPakSlotRenderers.render(inv.getSlot(i), gfx, mc, sx + 3, y + 3, SLOT_SIZE - 2);
+            UntilSlotRenderers.render(inv.getSlot(i), gfx, mc, sx + 3, y + 3, SLOT_SIZE - 2);
 
             if (i == sel)
                 gfx.blit(TEXTURE, sx, y, 0, 42, SLOT_SIZE, SLOT_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);

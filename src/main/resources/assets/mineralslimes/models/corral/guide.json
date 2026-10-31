@@ -1,0 +1,25 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "minecraft:block/cube_all",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "mineralslimes:corral/texture",
+		"particle": "mineralslimes:corral/texture"
+	},
+	"elements": [
+		{
+			"from": [7, 0, 6],
+			"to": [11, 10, 8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [9, 0, 6]},
+			"faces": {
+				"north": {"uv": [0, 0, 2, 5], "texture": "#0"},
+				"east": {"uv": [4, 0, 5, 5], "texture": "#0"},
+				"south": {"uv": [2, 0, 4, 5], "texture": "#0"},
+				"west": {"uv": [0, 5, 1, 10], "texture": "#0"},
+				"up": {"uv": [5, 0, 7, 1], "texture": "#0"},
+				"down": {"uv": [1, 5, 3, 6], "texture": "#0"}
+			}
+		}
+	]
+}

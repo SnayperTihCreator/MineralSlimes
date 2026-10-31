@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
-import snaypertihcreator.mineralslimes.common.items.vakpak.VakPakItem;
+import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 import software.bernie.geckolib.renderer.GeoRenderer;
 
@@ -14,9 +14,13 @@ public class VakPakModel extends BaseModel<VakPakItem> {
     public static final ResourceLocation MODEL = modLoc("geo/item/vak_pak.geo.json");
     public static final ResourceLocation ANIMATION = modLoc("animations/item/vakpak.animation.json");
 
-    public static final ResourceLocation TEXTURE_NORMAL = modLoc("textures/item/vak_pak/normal.png");
-    public static final ResourceLocation TEXTURE_USED = modLoc("textures/item/vak_pak/used.png");
-    public static final ResourceLocation TEXTURE_SHOT = modLoc("textures/item/vak_pak/shot.png");
+    private static ResourceLocation createTexture(String name) {
+        return modLoc("textures/item/vak_pak/%s.png".formatted(name));
+    }
+
+    public static final ResourceLocation TEXTURE_NORMAL = createTexture("normal");
+    public static final ResourceLocation TEXTURE_USED = createTexture("used");
+    public static final ResourceLocation TEXTURE_SHOT = createTexture("shot");
 
     @Override
     public ResourceLocation getModelResource(VakPakItem animatable, @Nullable GeoRenderer<VakPakItem> renderer) {
