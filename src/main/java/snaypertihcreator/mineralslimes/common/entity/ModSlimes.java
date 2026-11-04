@@ -8,10 +8,14 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
 import snaypertihcreator.mineralslimes.common.entity.slimes.PinkSlimeEntity;
 import snaypertihcreator.mineralslimes.common.entity.slimes.RockySlimeEntity;
+import snaypertihcreator.mineralslimes.common.entity.slimes.TubbySlimeEntity;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
@@ -32,12 +36,12 @@ public class ModSlimes {
             DeferredHolder<EntityType<?>, EntityType<T>> entity,
             DeferredItem<Item> icon
     ) {
-        public SlimeType slimeType() { return type.value(); }
-        public EntityType<T> entityType() { return entity.value(); }
-        public Item iconEntity() { return icon.value(); }
+        public @NotNull SlimeType slimeType() { return type.value(); }
+        public @NotNull EntityType<T> entityType() { return entity.value(); }
+        public @NotNull Item iconEntity() { return icon.value(); }
     }
 
-    public static <T extends AbstractSlimeEntity> Entry<T> register(String name, int priority,  int tint, EntityType.EntityFactory<T> factory, Consumer<SlimeType.Builder> config) {
+    public static <T extends AbstractSlimeEntity> @NotNull Entry<T> register(String name, int priority, int tint, EntityType.EntityFactory<T> factory, Consumer<SlimeType.Builder> config) {
         SlimeType type = buildType(name, priority, tint, config);
         DeferredHolder<SlimeType, SlimeType> typeHolder = SLIME_TYPE.register(name, () -> type);
         DeferredItem<Item> icon = ModItems.ITEMS.registerSimpleItem("%s_slime_icon".formatted(name));
@@ -53,25 +57,26 @@ public class ModSlimes {
         return entry;
     }
 
-    public static List<Entry<?>> all() { return Collections.unmodifiableList(SLIMES); }
-    public static Optional<Entry<?>> find(EntityType<?> entity) {
+    @Contract(pure = true)
+    public static @NotNull @UnmodifiableView List<Entry<?>> all() { return Collections.unmodifiableList(SLIMES); }
+    public static @NotNull Optional<Entry<?>> find(EntityType<?> entity) {
         return SLIMES.stream().filter(e -> e.entity().get() == entity).findFirst();
     }
     @SuppressWarnings("unused")
-    public static SlimeType slimeTypeOf(EntityType<?> entity) {
+    public static @NotNull SlimeType slimeTypeOf(EntityType<?> entity) {
         return find(entity).map(Entry::slimeType)
                 .orElseThrow(() -> new IllegalStateException("No SlimeType for " + entity));
     }
     public static Optional<Item> iconOf(EntityType<?> entity) {
         return find(entity).map(Entry::iconEntity);
     }
-    private static SlimeType buildType(String name, int priority, int tint, Consumer<SlimeType.Builder> config) {
+    private static @NotNull SlimeType buildType(String name, int priority, int tint, @NotNull Consumer<SlimeType.Builder> config) {
         SlimeType.Builder b = SlimeType.builder(name, priority, tint);
         config.accept(b);
         return b.build();
     }
 
-    public static Optional<Entry<?>> find(ResourceLocation id) {
+    public static @NotNull Optional<Entry<?>> find(ResourceLocation id) {
         return SLIMES.stream().filter(entry -> entry.type().getId().equals(id)).findFirst();
     }
 
@@ -90,6 +95,12 @@ public class ModSlimes {
             .likeFood(() -> Items.BEETROOT)
             .products(new SlimeType.Product(ModItems.ROCKY_PLORT, 1))
             .triggerable("roll")
+    );
+
+    public static final Entry<TubbySlimeEntity> TUBBY = register("tubby", 0, 0xFFFFFFFF, TubbySlimeEntity::new, b -> b
+            .diet(Diet.of(Diet.MEAT))
+            .products(new SlimeType.Product(ModItems.TUBBY_PLORT, 1))
+            .customNormalMood()
     );
 
 }

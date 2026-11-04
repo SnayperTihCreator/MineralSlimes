@@ -23,5 +23,6 @@ public class ModSlimeAnimationProvider extends SlimeAnimationProvider {
     protected void addAnimations() {
         merge(DEFAULT, preset("rocky"), "rocky_slime");
         merge(DEFAULT, preset("pink"), "pink_slime");
+        merge(DEFAULT, preset("tubby"), "tubby_slime");
     }
 }

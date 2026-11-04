@@ -11,15 +11,11 @@ import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
 import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 
-import java.util.List;
-
 @EventBusSubscriber(modid = MineralSlimes.MODID)
 public class ModEvents {
     @SubscribeEvent
     public static void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
-        var slimes = List.of(ModSlimes.PINK, ModSlimes.ROCKY);
-
-        for (var slime: slimes)
+        for (var slime: ModSlimes.all())
             event.put(slime.entityType(), AbstractSlimeEntity.createAttributes(slime.slimeType()).build());
     }
 

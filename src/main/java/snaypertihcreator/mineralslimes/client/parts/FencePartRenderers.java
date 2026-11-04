@@ -12,7 +12,6 @@ import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.FencePartType;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,14 +20,13 @@ public final class FencePartRenderers {
 
     private static final Map<FencePartType<?>,  FencePartRenderer<?>> RENDERERS = new HashMap<>();
 
-    public static void registerRenderer(FencePartType<?> type, FencePartRenderer<?> renderer) {
+    public static void register(FencePartType<?> type, FencePartRenderer<?> renderer) {
         RENDERERS.put(type, renderer);
     }
 
     @SuppressWarnings("unchecked")
-    @Nullable
     public static  FencePartRenderer<FencePart> get(FencePartType<?> type) {
-        return (FencePartRenderers.FencePartRenderer<FencePart>) RENDERERS.get(type);
+        return (FencePartRenderers.FencePartRenderer<FencePart>) RENDERERS.getOrDefault(type, DefaultFencePartRenderer.INSTANCE);
     }
 
     public interface FencePartRenderer<T extends FencePart> {

@@ -19,7 +19,6 @@ public class CorralRenderer implements BlockEntityRenderer<CorralBlockEntity> {
     public void render(@NotNull CorralBlockEntity blockEntity, float partialTick, @NotNull PoseStack pose, @NotNull MultiBufferSource buffers, int packedLight, int packedOverlay) {
         for (FencePart part : blockEntity.getParts()) {
             FencePartRenderers.FencePartRenderer<FencePart> renderer =  FencePartRenderers.get(part.getType());
-            if (renderer == null) renderer = FencePartRenderers.DefaultFencePartRenderer.INSTANCE;
 
             pose.pushPose();
             transformToPart(pose, part);

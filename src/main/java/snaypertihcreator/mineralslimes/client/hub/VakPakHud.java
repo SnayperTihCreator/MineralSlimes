@@ -48,10 +48,10 @@ public class VakPakHud {
     );
     private static final int SLOT_SIZE = 22;
     private static final int SLOT_GAP = 2;
-    private static final int TEXTURE_SIZE = 256;
+    public static final int TEXTURE_SIZE = 256;
     private static final int SHOW_TIME_TITLE = 1500;
     public static final ResourceLocation ID = modLoc("vakpak_hud");
-    private static final ResourceLocation TEXTURE = modLoc("textures/gui/vakpakhub.png");
+    public static final ResourceLocation TEXTURE = modLoc("textures/gui/vakpakhub.png");
 
     public static final String DISPLAY_CATEGORY = "key.categories.mineralslimes";
     public static final String DISPLAY_KEY = "key.mineralslimes.vakpak_scroll";

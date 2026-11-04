@@ -2,6 +2,7 @@ package snaypertihcreator.mineralslimes.datagen.lang;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
@@ -23,6 +24,7 @@ public class ModRuLangProvider extends LanguageProvider {
     protected void addTranslations() {
         add(ModItems.PINK_PLORT.get(), "Розовый плорт");
         add(ModItems.ROCKY_PLORT.get(), "Скалистый плорт");
+        add(ModItems.TUBBY_PLORT.get(), "Мяуровый плорт");
 
         add(ModItems.ODD_ONION.get(), "Чудной лук");
         add(ModItems.CUBERRY.get(), "Кубника");
@@ -50,6 +52,7 @@ public class ModRuLangProvider extends LanguageProvider {
 
         add(ModSlimes.PINK.slimeType().displayName(), "Розовый слайм");
         add(ModSlimes.ROCKY.slimeType().displayName(), "Скалистый слайм");
+        add(ModSlimes.TUBBY.slimeType().displayName(), "Мяуровый слайм");
 
         add(ModCreativeTabs.PLORT_TAB.get().getDisplayName(), "Плорты");
         add(ModCreativeTabs.SLIMES_TAB.get().getDisplayName(), "Слаймы");
@@ -57,8 +60,10 @@ public class ModRuLangProvider extends LanguageProvider {
 
     }
 
-    public void add(Component text, String translationKey) {
-        add(text.getString(), translationKey);
+    public void add(Component text, String value) {
+        if (text.getContents() instanceof TranslatableContents tc)
+            add(tc.getKey(), value);
+        else add(text.getString(), value);
     }
 
 }

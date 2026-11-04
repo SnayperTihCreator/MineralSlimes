@@ -1,18 +1,19 @@
 package snaypertihcreator.mineralslimes.client.hub;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlot;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEntity;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotItem;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotWater;
+
+import static snaypertihcreator.mineralslimes.MineralSlimes.modLoc;
 
 public final class VakPakSlotRenderers {
     private VakPakSlotRenderers() {}
@@ -21,8 +22,17 @@ public final class VakPakSlotRenderers {
         void render(VakPakSlot slot, GuiGraphics gfx, Minecraft mc, int x, int y, int size);
     }
 
-    public static void renderCount(int count, GuiGraphics gfx, Minecraft mc, int x, int y) {
-        gfx.drawString(mc.font, String.valueOf(count), x + 8, y + 6, 0xFF5555, false);
+    public static void renderCount(int count, GuiGraphics gfx, Minecraft mc, int x, int y){
+        renderCount(count, gfx, mc, x, y, false);
+    }
+
+    public static void renderCount(int count, GuiGraphics gfx, Minecraft mc, int x, int y, boolean isZero) {
+        if ((count <= 1) && !isZero) return;
+        String s = String.valueOf(count);
+        gfx.pose().pushPose();
+        gfx.pose().translate(0.0F, 0.0F, 200.0F);
+        gfx.drawString(mc.font, s, x + 19 - 2 - mc.font.width(s), y + 6 + 3, 16777215, true);
+        gfx.pose().popPose();
     }
 
     public static final class Entity implements VakPakSlotRenderer{
@@ -31,11 +41,7 @@ public final class VakPakSlotRenderers {
             if (!(slot instanceof VakPakSlotEntity entitySlot)) return;
 
             renderIcon(entitySlot, gfx, mc, x, y);
-            if (entitySlot.count() > 1) {
-                ItemStack countProxy = new ItemStack(Items.STONE, entitySlot.count());
-                countProxy.set(DataComponents.CUSTOM_NAME, Component.empty());
-                gfx.renderItemDecorations(mc.font, countProxy, x, y);
-            }
+            renderCount(entitySlot.count(), gfx, mc, x, y);
         }
 
         private void renderIcon(VakPakSlotEntity slot, GuiGraphics gfx, Minecraft mc, int x, int y) {
@@ -64,23 +70,42 @@ public final class VakPakSlotRenderers {
             ItemStack stack = itemSlot.getStack();
             if (stack.isEmpty()) return;
             gfx.renderItem(stack, x, y);
-            gfx.renderItemDecorations(mc.font, stack, x, y);
+            renderCount(stack.getCount(), gfx, mc, x, y);
         }
     }
 
     public static final class Water implements VakPakSlotRenderer {
+        private static final ResourceLocation TEXTURE_WATER = modLoc("textures/gui/water.png");
+
         @Override
         public void render(VakPakSlot slot, GuiGraphics gfx, Minecraft mc, int x, int y, int size) {
             if (!(slot instanceof VakPakSlotWater waterSlot)) return;
-            if (waterSlot.buckets() <= 0) return;
 
-            gfx.renderItem(new ItemStack(Items.WATER_BUCKET), x, y);
+            gfx.blit(VakPakHud.TEXTURE, x, y, 23, 45, size, size, VakPakHud.TEXTURE_SIZE, VakPakHud.TEXTURE_SIZE);
 
-            if (waterSlot.buckets() > 1) {
-                ItemStack countProxy = new ItemStack(Items.STONE, waterSlot.buckets());
-                countProxy.set(DataComponents.CUSTOM_NAME, Component.empty());
-                gfx.renderItemDecorations(mc.font, countProxy, x, y);
+            float k = Math.clamp(waterSlot.buckets() / (float) waterSlot.capacity(), 0F, 1F);
+
+            if (k > 0f) {
+                int padding = 2;
+
+                int drawX = x + padding - 2;
+                int drawY = y + padding - 2;
+                int drawSize = size - (padding * 2);
+
+                int fillHeight = (int) (drawSize * k);
+                if (fillHeight == 0) fillHeight = 1;
+
+                int filledTopY = drawY + (drawSize - fillHeight);
+
+                int srcHeight = Math.max(1, Math.round(16f * fillHeight / drawSize));
+                int srcY = 16 - srcHeight;
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                gfx.blit(TEXTURE_WATER, drawX, filledTopY, drawSize, fillHeight, 0, srcY, 16, srcHeight, 16, 16);
+                RenderSystem.disableBlend();
             }
+
+            renderCount(waterSlot.buckets(), gfx, mc, x, y, true);
         }
     }
 }

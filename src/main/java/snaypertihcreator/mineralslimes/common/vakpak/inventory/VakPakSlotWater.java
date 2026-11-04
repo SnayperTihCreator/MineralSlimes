@@ -32,6 +32,7 @@ public final class VakPakSlotWater extends VakPakSlot {
     }
 
     public int buckets() { return buckets; }
+    public int capacity() { return CAPACITY; }
     public boolean isFull() { return buckets >= CAPACITY; }
 
     @Override public VakPakSlotType getType() { return VakPakSlotType.WATER; }
