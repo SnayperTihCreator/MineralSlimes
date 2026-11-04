@@ -11,16 +11,20 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.FencePartType;
+import snaypertihcreator.mineralslimes.common.vakpak.vacuum.IVakPakVacuumReactableBE;
+import snaypertihcreator.mineralslimes.common.vakpak.vacuum.VakPakVacuumContext;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CorralBlockEntity extends BlockEntity {
+public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReactableBE {
 
     private final List<FencePart> parts =  new ArrayList<>();
 
@@ -86,6 +90,13 @@ public class CorralBlockEntity extends BlockEntity {
         if(level==null) return;
         if(level.isClientSide) return;
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
+    @Override
+    public void onVakPakVacuum(VakPakVacuumContext ctx) {
+        Vec3 hit = ctx.getHitLocation() != null ? ctx.getHitLocation(): ctx.getPos().getCenter();
+        FencePart part = getPartNear(FencePart.angleFrom(ctx.getPos(), hit), FencePart.STEP/2F);
+        if (part != null) part.onVakPakVacuum(ctx);
     }
 
     @Override

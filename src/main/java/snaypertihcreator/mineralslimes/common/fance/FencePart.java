@@ -1,16 +1,19 @@
 package snaypertihcreator.mineralslimes.common.fance;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
+import snaypertihcreator.mineralslimes.common.vakpak.vacuum.VakPakVacuumContext;
 
 
 public abstract class FencePart {
@@ -40,6 +43,7 @@ public abstract class FencePart {
     public void tick(){}
     public void onAttached(){}
     public void onRemoved(){}
+    public void onVakPakVacuum(VakPakVacuumContext ctx) {}
 
 
     @SuppressWarnings("unused")
@@ -94,5 +98,11 @@ public abstract class FencePart {
         return ((Math.round(angle/STEP)%STEPS) + STEPS)%STEPS;
     }
 
+    public static float angleFrom(BlockPos center, Vec3 location){
+        double dx = location.x - (center.getX() + 0.5);
+        double dz = location.z - (center.getZ() + 0.5);
+        float angle = (float) Math.toDegrees(Math.atan2(dx, -dz));
+        return angle < 0? angle + 360F : angle;
+    }
 
 }

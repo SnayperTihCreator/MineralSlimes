@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
 
@@ -18,16 +19,22 @@ public class VakPakVacuumContext {
     private final BlockPos pos;
     private final BlockState state;
     private final VakPakUpgrades upgrades;
+    private final Vec3 hitLocation;
 
     private Result result = Result.DEFAULT;
     private boolean canceled = false;
 
     public VakPakVacuumContext(Player player, Level level, BlockPos pos, BlockState state, VakPakUpgrades upgrades) {
+        this(player, level, pos, state, upgrades, null);
+    }
+
+    public VakPakVacuumContext(Player player, Level level, BlockPos pos, BlockState state, VakPakUpgrades upgrades, @Nullable Vec3 hitLocation) {
         this.player = player;
         this.level = level;
         this.pos = pos;
         this.state = state;
         this.upgrades = upgrades == null ? VakPakUpgrades.EMPTY : upgrades;
+        this.hitLocation = hitLocation;
     }
 
     public Player getPlayer()        { return player;  }
@@ -35,11 +42,13 @@ public class VakPakVacuumContext {
     public BlockPos getPos()         { return pos;     }
     public BlockState getState()     { return state;   }
     public VakPakUpgrades upgrades() { return upgrades; }
+    public Vec3 getHitLocation()    { return hitLocation; }
 
     public Result getResult()           { return result; }
     public void setResult(Result r)     { this.result = r; }
     public boolean isCanceled()         { return canceled; }
     public void setCanceled(boolean c)  { this.canceled = c; }
+    public boolean isConsumed()         { return canceled || result != Result.DEFAULT; }
 
     @Nullable
     public ServerLevel serverLevel() {

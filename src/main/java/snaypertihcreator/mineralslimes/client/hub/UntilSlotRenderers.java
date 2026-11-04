@@ -20,7 +20,7 @@ public final class UntilSlotRenderers {
         register(VakPakSlotType.ITEM, new VakPakSlotRenderers.Item());
         register(VakPakSlotType.ENTITY, new VakPakSlotRenderers.Entity());
         register(VakPakSlotType.WATER, new VakPakSlotRenderers.Water());
-        register(VakPakSlotType.EMPTY, ((slot, gfx, mc, x, y, size) -> {}));
+        register(VakPakSlotType.EMPTY, new VakPakSlotRenderers.Empty());
     }
 
     public static void register(VakPakSlotType type, VakPakSlotRenderers.VakPakSlotRenderer renderer) {

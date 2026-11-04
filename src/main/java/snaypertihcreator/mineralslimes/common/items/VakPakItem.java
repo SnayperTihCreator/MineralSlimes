@@ -144,24 +144,24 @@ public final class VakPakItem extends Item implements GeoItem {
         BlockPos pos = hit.getBlockPos().immutable();
         BlockState state = level.getBlockState(pos);
         if (state.isAir()) return false;
-        VakPakVacuumContext ctx = new VakPakVacuumContext(player, level, pos, state, upgrades);
 
-        if (inventory.tryVacuumBlock(ctx, upgrades)) return true;
+        VakPakVacuumContext ctx = new VakPakVacuumContext(player, level, pos, state, upgrades, hit.getLocation());
 
         if (state.getBlock() instanceof IVakPakVacuumReactableBlock rb) {
             rb.onVakPakVacuum(ctx);
-            return true;
+            if (ctx.isConsumed()) return true;
         }
         if (level.getBlockEntity(pos) instanceof IVakPakVacuumReactableBE rbe) {
             rbe.onVakPakVacuum(ctx);
-            return true;
+            if (ctx.isConsumed()) return true;
         }
-        VakPakBlockVacuumRegistry.Handler h = VakPakBlockVacuumRegistry.get(state.getBlock());
+        var h = VakPakBlockVacuumRegistry.get(state.getBlock());
         if (h != null) {
             h.onVacuum(ctx);
-            return true;
+            if(ctx.isConsumed()) return true;
         }
-        return false;
+
+        return inventory.tryVacuumBlock(ctx, upgrades);
     }
 
     public static void shoot(@NotNull Player player, ItemStack vakPakStack) {

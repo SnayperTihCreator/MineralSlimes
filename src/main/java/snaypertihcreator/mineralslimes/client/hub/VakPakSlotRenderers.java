@@ -35,6 +35,13 @@ public final class VakPakSlotRenderers {
         gfx.pose().popPose();
     }
 
+    public static final class Empty implements VakPakSlotRenderer {
+        @Override
+        public void render(VakPakSlot slot, GuiGraphics gfx, Minecraft mc, int x, int y, int size) {
+            gfx.blit(VakPakHud.TEXTURE, x, y, 41, 45, size, size, VakPakHud.TEXTURE_SIZE, VakPakHud.TEXTURE_SIZE);
+        }
+    }
+
     public static final class Entity implements VakPakSlotRenderer{
         @Override
         public void render(VakPakSlot slot, GuiGraphics gfx, Minecraft mc, int x, int y, int size) {

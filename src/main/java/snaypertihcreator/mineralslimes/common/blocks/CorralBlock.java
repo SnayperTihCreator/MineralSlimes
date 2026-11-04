@@ -109,11 +109,10 @@ public class CorralBlock extends Block implements EntityBlock {
         return ((Math.round(angle / step) *step)%360F + 360F)%360F;
     }
 
-    private static float angleFromHit(BlockHitResult hit){
+    public static float angleFromHit(BlockHitResult hit){
         double dx = hit.getLocation().x - (hit.getBlockPos().getX() + 0.5);
         double dz = hit.getLocation().z - (hit.getBlockPos().getZ() + 0.5);
         float angle = (float) Math.toDegrees(Math.atan2(dx, -dz));
-        if (angle < 0) angle += 360F;
-        return angle;
+        return angle < 0? angle + 360F : angle;
     }
 }
