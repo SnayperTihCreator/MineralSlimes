@@ -28,7 +28,7 @@ import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
 
 public class CorralBlock extends Block implements EntityBlock {
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 16, 13);
+    private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 16, 11);
 
     public CorralBlock(Properties properties) {
         super(properties.strength(1.5F).noOcclusion().sound(SoundType.METAL));

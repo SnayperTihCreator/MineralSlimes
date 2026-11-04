@@ -1,7 +1,6 @@
 package snaypertihcreator.mineralslimes.common.network;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.api.distmarker.Dist;
@@ -16,28 +15,18 @@ import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 
 @EventBusSubscriber(modid = MineralSlimes.MODID, value = Dist.CLIENT)
 public class ModNetworkingClient {
-    private static final long SHOT_INTERVAL_MS = 250;
-    private static long lastShotTime = -1000;
-
-    private static boolean attackHeld = false;
-    private static boolean useHeld = false;
+    private static boolean vaccumActive = false;
 
     @SubscribeEvent
     public static void onMouseButton(InputEvent.MouseButton.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return;
-        if (mc.screen != null) return;
+        if (player == null || mc.screen != null) return;
         if (!(player.getMainHandItem().getItem() instanceof VakPakItem)) return;
 
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            if (event.getAction() == InputConstants.PRESS) {
-                event.setCanceled(true);
-                attackHeld = true;
-                fireOnce();
-            } else if (event.getAction() == InputConstants.RELEASE) {
-                attackHeld = false;
-            }
+        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT && event.getAction() == InputConstants.PRESS) {
+            event.setCanceled(true);
+            PacketDistributor.sendToServer(VakPakPayload.Shoot.INSTANCE);
         }
     }
 
@@ -52,37 +41,36 @@ public class ModNetworkingClient {
 
         event.setSwingHand(false);
         event.setCanceled(true);
-        if (!useHeld) {
-            useHeld = true;
-            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(true));
-        }
     }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
+        if (player == null) { stopVacuum(); return; }
 
-        if (attackHeld && !mc.options.keyAttack.isDown()) attackHeld = false;
-
-        boolean holdingVakPak = player != null && mc.screen == null
+        boolean holdingVakPak = mc.screen == null && mc.isWindowActive()
                 && player.getMainHandItem().getItem() instanceof VakPakItem;
 
-        if (attackHeld) {
-            if (!holdingVakPak) attackHeld = false;
-            else fireOnce();
-        }
+        if (!holdingVakPak) { stopVacuum(); return; }
 
-        if (useHeld && (!mc.options.keyUse.isDown() || !holdingVakPak)) {
-            useHeld = false;
-            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(false));
-        }
+        long window = mc.getWindow().getWindow();
+        boolean lmb = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+        boolean rmb = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
+
+        boolean  hasAmmo = !VakPakItem.getInventory(player.getMainHandItem()).peekSelected().isEmpty();
+        if (lmb && hasAmmo) PacketDistributor.sendToServer(VakPakPayload.Shoot.INSTANCE);
+
+        if (rmb && !vaccumActive){
+            vaccumActive = true;
+            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(true));
+        } else if (!rmb && vaccumActive) stopVacuum();
     }
 
-    private static void fireOnce() {
-        long now = Util.getMillis();
-        if (now - lastShotTime < SHOT_INTERVAL_MS) return;
-        lastShotTime = now;
-        PacketDistributor.sendToServer(VakPakPayload.Shoot.INSTANCE);
+    private static void stopVacuum() {
+        if (vaccumActive) {
+            vaccumActive = false;
+            PacketDistributor.sendToServer(new VakPakPayload.Vacuum(false));
+        }
     }
 }
