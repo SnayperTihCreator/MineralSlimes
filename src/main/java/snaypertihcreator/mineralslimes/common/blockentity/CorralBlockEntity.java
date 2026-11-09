@@ -2,15 +2,22 @@ package snaypertihcreator.mineralslimes.common.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
@@ -20,16 +27,41 @@ import snaypertihcreator.mineralslimes.common.vakpak.vacuum.IVakPakVacuumReactab
 import snaypertihcreator.mineralslimes.common.vakpak.vacuum.VakPakVacuumContext;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReactableBE {
 
+    @Nullable private Block storedFence;
     private final List<FencePart> parts =  new ArrayList<>();
+    @Nullable private BlockPos controllerPos;
+    @Nullable private Set<BlockPos> structure;
 
     public CorralBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntity.CORRAL_BE.get(), pos, blockState);
+    }
+
+    @Nullable
+    public Block getStoredFence() {
+        return storedFence;
+    }
+
+    public void setStoredFence(@Nullable Block storedFence) {
+        this.storedFence = storedFence;
+        syncToClient();
+    }
+
+    @Nullable public BlockState getFenceState() {
+        if (storedFence == null) return null;
+
+        BlockState state = storedFence.defaultBlockState();
+        BlockState self = getBlockState();
+        for (var entry: CorralBlock.CONNECTIONS.entrySet())
+            if (state.hasProperty(entry.getValue()))
+                state = state.setValue(entry.getValue(), self.getValue(entry.getValue()));
+
+        if (state.hasProperty(BlockStateProperties.WATERLOGGED))
+            state = state.setValue(BlockStateProperties.WATERLOGGED, self.getValue(BlockStateProperties.WATERLOGGED));
+        return state;
     }
 
     public List<FencePart> getParts() { return Collections.unmodifiableList(parts); }
@@ -115,11 +147,22 @@ public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReact
         ListTag list = new ListTag();
         for (FencePart part : parts) list.add(part.save(registries));
         tag.put("parts", list);
+        if (storedFence != null)
+            tag.putString("fence", BuiltInRegistries.BLOCK.getKey(storedFence).toString());
+        if (this.controllerPos != null) tag.putLong("controller", this.controllerPos.asLong());
+        if (this.structure != null) tag.putLongArray("structure", structure.stream().mapToLong(BlockPos::asLong).toArray());
     }
 
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
+
+        if (tag.contains("fence", Tag.TAG_STRING)){
+            ResourceLocation id = ResourceLocation.tryParse(tag.getString("fence"));
+            Block block = id == null ? null : BuiltInRegistries.BLOCK.getOptional(id).orElse(null);
+            if (block != null && block != Blocks.AIR) storedFence = block;
+        }
+
         parts.clear();
         ListTag list = tag.getList("parts", ListTag.TAG_COMPOUND);
         for (var i = 0; i < list.size(); i++) {
@@ -128,6 +171,14 @@ public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReact
                 if (part != null) this.parts.add(part);
             } catch (IllegalArgumentException ignored) {} // ИГНОРИМ
         }
+
+        if (tag.contains("controller")) controllerPos = BlockPos.of(tag.getLong("controller"));
+        if (tag.contains("structure")){
+            long[] packed = tag.getLongArray("structure");
+            Set<BlockPos> structure = new HashSet<>(packed.length);
+            for (var packedPos: packed) structure.add(BlockPos.of(packedPos));
+            this.structure = structure;
+        }
     }
 
     public void dropAndClearParts(Level level, BlockPos pos){
@@ -135,6 +186,31 @@ public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReact
             part.onRemoved();
             Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), part.getType().createStack());
         }
+        if (storedFence != null)
+            Containers.dropItemStack(level, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, new ItemStack(storedFence));
         parts.clear();
+    }
+
+    public boolean isStructureRoot() {
+        return controllerPos != null && controllerPos.equals(getBlockPos());
+    }
+
+    @Nullable
+    public BlockPos getControllerPos() {
+        return controllerPos;
+    }
+
+    public void setControllerPos(@Nullable BlockPos rootPos) {
+        this.controllerPos = rootPos;
+        setChanged();
+    }
+
+    public @Nullable Set<BlockPos> getStructure() {
+        return structure;
+    }
+
+    public void setStructure(@Nullable Set<BlockPos> structure) {
+        this.structure = structure;
+        setChanged();
     }
 }

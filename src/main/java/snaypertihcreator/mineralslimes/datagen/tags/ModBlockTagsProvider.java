@@ -2,10 +2,12 @@ package snaypertihcreator.mineralslimes.datagen.tags;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.BlockTags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
+import snaypertihcreator.mineralslimes.common.blocks.ModBlocks;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -16,6 +18,6 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.@NotNull Provider provider) {
-
+        tag(BlockTags.FENCES).add(ModBlocks.CORRAL.get());
     }
 }

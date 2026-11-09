@@ -20,7 +20,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
@@ -35,6 +34,7 @@ import snaypertihcreator.mineralslimes.common.config.Config;
 import snaypertihcreator.mineralslimes.common.entity.ModEntities;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.recipes.ModRecipes;
+import snaypertihcreator.mineralslimes.datagen.ModLootTableProvider;
 import snaypertihcreator.mineralslimes.datagen.ModRecipeProvider;
 import snaypertihcreator.mineralslimes.datagen.ModSlimeAnimationProvider;
 import snaypertihcreator.mineralslimes.datagen.lang.ModEnLangProvider;
@@ -95,6 +95,7 @@ public class MineralSlimes {
         generator.addProvider(includeServer, new ModItemTagsProvider(output, provider, blockTags.contentsGetter(), helper));
         generator.addProvider(includeServer, new ModEntityTagsProvider(output, provider, helper));
         generator.addProvider(includeServer, new ModRecipeProvider(output, provider));
+        generator.addProvider(includeServer, new ModLootTableProvider(output, provider));
 
     }
 
