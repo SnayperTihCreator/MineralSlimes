@@ -24,8 +24,7 @@ public class InductorItem extends BlockItem {
     protected boolean canPlace(@NotNull BlockPlaceContext context, @NotNull BlockState state) {
         if (super.canPlace(context, state)) return true;
         BlockPos below = context.getClickedPos().below();
-        return context.getClickedFace() == Direction.UP
-                && context.getLevel().getBlockState(below).is(BlockTags.FENCES);
+        return context.getClickedFace() == Direction.UP && context.getLevel().getBlockState(below).is(BlockTags.FENCES);
     }
 
     @Override

@@ -20,7 +20,6 @@ public class CorralRenderer implements BlockEntityRenderer<CorralBlockEntity> {
 
     @Override
     public void render(@NotNull CorralBlockEntity corral, float partialTick, @NotNull PoseStack pose, @NotNull MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        BlockState fence = corral.getFenceState();
         renderFence(corral, corral.getFenceState(), pose, buffers, packedLight, packedOverlay);
 
         for (FencePart part : corral.getParts()) {
@@ -41,7 +40,7 @@ public class CorralRenderer implements BlockEntityRenderer<CorralBlockEntity> {
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(fence, pose, buffers, light, packedOverlay);
     }
 
-    private static void transformToPart(PoseStack pose, FencePart part) {
+    protected static void transformToPart(PoseStack pose, FencePart part) {
         pose.translate(0.5, 0, 0.5);
         if (part.getAngle() >= 0){
             pose.mulPose(Axis.YN.rotationDegrees(part.getAngle()));

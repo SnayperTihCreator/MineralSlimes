@@ -1,0 +1,40 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "cube_all",
+	"render_type": "minecraft:cutout",
+	"textures": {
+		"0": "mineralslimes:block/fence",
+		"particle": "mineralslimes:block/fence"
+	},
+	"elements": [
+		{
+			"name": "Inductor",
+			"from": [3, 0, 3],
+			"to": [13, 20, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [3, 0, 5.5, 5], "texture": "#0"},
+				"east": {"uv": [3, 0, 5.5, 5], "texture": "#0"},
+				"south": {"uv": [3, 0, 5.5, 5], "texture": "#0"},
+				"west": {"uv": [3, 0, 5.5, 5], "texture": "#0"},
+				"up": {"uv": [3, 5, 5.5, 7.5], "texture": "#0"},
+				"down": {"uv": [5.5, 5, 8, 7.5], "texture": "#0"}
+			}
+		},
+		{
+			"name": "InductorSkirt",
+			"from": [3.5, -9, 3.5],
+			"to": [12.5, 0, 12.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, -20, 7]},
+			"faces": {
+				"north": {"uv": [5.5, 0, 7.75, 2.25], "texture": "#0"},
+				"east": {"uv": [5.5, 0, 7.75, 2.25], "texture": "#0"},
+				"south": {"uv": [5.5, 0, 7.75, 2.25], "texture": "#0"},
+				"west": {"uv": [5.5, 0, 7.75, 2.25], "texture": "#0"},
+				"up": {"uv": [7.75, 0, 10, 2], "texture": "#0"},
+				"down": {"uv": [7.75, 0, 10, 2], "texture": "#0"}
+			}
+		}
+	]
+}

@@ -285,7 +285,7 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
         return angle < 0? angle + 360F : angle;
     }
 
-    private static ItemInteractionResult toItemResult(InteractionResult result, Level level) {
+    public static ItemInteractionResult toItemResult(InteractionResult result, Level level) {
         return switch (result){
             case SUCCESS, SUCCESS_NO_ITEM_USED -> level.isClientSide ? ItemInteractionResult.SUCCESS : ItemInteractionResult.CONSUME;
             case CONSUME -> ItemInteractionResult.CONSUME;

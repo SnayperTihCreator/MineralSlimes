@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.block.CorralRenderer;
+import snaypertihcreator.mineralslimes.client.block.InductorRenderer;
 import snaypertihcreator.mineralslimes.client.entity.SlimeRenderer;
 import snaypertihcreator.mineralslimes.client.item.VakPakRenderer;
 import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
@@ -54,6 +55,7 @@ public class MineralSlimesClient {
             event.registerEntityRenderer(slime.entityType(), context -> new SlimeRenderer<>(context, slime.slimeType()));
 
         event.registerBlockEntityRenderer(ModBlockEntity.CORRAL_BE.get(), CorralRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntity.INDUCTOR_BE.get(), InductorRenderer::new);
     }
 
 

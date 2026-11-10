@@ -18,6 +18,8 @@ public final class ModBlockEntity {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CorralBlockEntity>> CORRAL_BE =
             register("corral", CorralBlockEntity::new, ModBlocks.CORRAL);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<InductorBlockEntity>> INDUCTOR_BE =
+            register("inductor", InductorBlockEntity::new, ModBlocks.INDUCTOR);
 
     @SuppressWarnings("SameParameterValue")
     private static <T extends BlockEntity> DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> register(

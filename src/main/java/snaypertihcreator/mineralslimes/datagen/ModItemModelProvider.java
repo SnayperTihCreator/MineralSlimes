@@ -41,6 +41,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         stubSlimeIcon(ModSlimes.TUBBY);
 
         simpleBlockItem(ModBlocks.CORRAL.get());
+        simpleBlockItem(ModBlocks.INDUCTOR.get());
         simplePartItem(ModPartTypes.GUIDE_PART.get(), ModItems.GUIDE_PART);
     }
 
