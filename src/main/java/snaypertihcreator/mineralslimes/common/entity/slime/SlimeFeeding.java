@@ -27,7 +27,7 @@ public final class SlimeFeeding {
 
     private static final int NUTRITION_SCALE = 10;
 
-    public SlimeFeeding(AbstractSlimeEntity slime){
+    public SlimeFeeding(AbstractSlimeEntity slime) {
         this.slime = slime;
     }
 
@@ -59,16 +59,21 @@ public final class SlimeFeeding {
         return false;
     }
 
-    public void tryStart(Entity target) {
-        if (isEating()) return;
+    public boolean tryStart(Entity target) {
+        if (isEating()) return false;
+        if (target == null || !target.isAlive() || isTakenByOther(target)) return false;
+        if (target instanceof ItemEntity item && !canEatWorldItem(item.getItem())) return false;
+
         this.eatingTarget = target;
         this.reservedFood = target;
-        this.eatTimer = slime.slimeType().eatDurationTicks();
+        this.eatTimer = Math.max(slime.slimeType().eatDurationTicks(),
+                slime.slimeType().eatGrabTick() + 1); // гарантируем достижимый grabTick
         this.ateSomething = false;
         this.eatenNutrition = 0;
         this.isDoubleProduct = false;
         slime.getNavigation().stop();
         slime.animations().play("eat");
+        return true;
     }
 
     private static int nutritionOf(ItemStack stack) {
@@ -78,6 +83,13 @@ public final class SlimeFeeding {
 
     public void tick() {
         if (this.eatTimer <= 0) return;
+        if (slime.level().isClientSide) return;
+
+        if (this.eatingTarget != null && !this.eatingTarget.isAlive() && this.eatTimer > slime.slimeType().eatGrabTick()) {
+            abort();
+            return;
+        }
+
         this.eatTimer--;
 
         if (this.eatingTarget != null && this.eatTimer > slime.slimeType().eatGrabTick()) {
@@ -120,8 +132,7 @@ public final class SlimeFeeding {
             item.setPickUpDelay(32767);
             item.setNoGravity(true);
             item.setDeltaMovement(Vec3.ZERO);
-            Vec3 mouth = slime.position()
-                    .add(slime.getLookAngle().normalize().scale(0.9))
+            Vec3 mouth = slime.position().add(slime.getLookAngle().normalize().scale(0.9))
                     .add(0, slime.getBbHeight() * 0.5, 0);
             item.setPos(mouth.x, mouth.y, mouth.z);
         } else if (this.eatingTarget instanceof LivingEntity prey && prey.isAlive()) {
@@ -169,8 +180,7 @@ public final class SlimeFeeding {
 
     private void consumeDrops(Entity prey) {
         List<ItemEntity> drops = slime.level().getEntitiesOfClass(ItemEntity.class,
-                prey.getBoundingBox().inflate(1.5),
-                d -> canEat(d.getItem()));
+                prey.getBoundingBox().inflate(1.5), d -> canEatWorldItem(d.getItem()));
         for (ItemEntity drop : drops) {
             if (isLikedFood(drop.getItem())) this.isDoubleProduct = true;
             this.eatenNutrition += nutritionOf(drop.getItem());
@@ -186,7 +196,8 @@ public final class SlimeFeeding {
             int multiplier = isDoubleProduct ? 2 : 1;
             for (var product : slime.slimeType().products()) {
                 if (product.isEmpty()) continue;
-                slime.spawnAtLocation(product.create(product.count() * multiplier));
+                int count = Math.min(product.create().getMaxStackSize(), product.count() * multiplier);
+                slime.spawnAtLocation(product.create(count));
             }
         }
         this.eatenNutrition = 0;
@@ -194,6 +205,6 @@ public final class SlimeFeeding {
         this.ateSomething = false;
         this.eatTimer = 0;
         this.reservedFood = null;
+        this.eatingTarget = null;
     }
-
 }
