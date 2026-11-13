@@ -41,6 +41,7 @@ public class ModItemTagsProvider extends ItemTagsProvider {
             if (item.getId().getPath().endsWith("_plort"))
                 tag(ModTags.Items.PLORTS).add(item.get());
 
+        tag(ModTags.Items.WRENCH).add(ModItems.TOOL.get());
 
     }
 }

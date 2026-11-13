@@ -15,11 +15,16 @@ import static snaypertihcreator.mineralslimes.MineralSlimes.modLoc;
 
 public class FencePartType<T extends FencePart> {
     private final BiFunction<CorralBlockEntity, Float, T> factory;
-    @Nullable
-    private CorralPartItem<T> cachedItem;
+    private final List<String> variants;
+    @Nullable private CorralPartItem<T> cachedItem;
 
     public FencePartType(BiFunction<CorralBlockEntity, Float, T> factory) {
+        this(factory, List.of());
+    }
+
+    public FencePartType(BiFunction<CorralBlockEntity, Float, T> factory, List<String> variants) {
         this.factory = Objects.requireNonNull(factory, "factory");
+        this.variants = List.copyOf(variants);
     }
 
     public ResourceLocation getId() {
@@ -31,7 +36,21 @@ public class FencePartType<T extends FencePart> {
         return id == null ? "unregistered" : id.getPath();
     }
 
-    public ResourceLocation getModelId() {
+    public List<String> getVariants() {
+        return variants;
+    }
+
+    public boolean hasVariant(@Nullable String variant) {
+        return variant == null || variant.isEmpty() || variants.contains(variant);
+    }
+
+    public ResourceLocation modelId(@Nullable String variant) {
+        String name = getName();
+        return (variant == null || variant.isEmpty())? modLoc("corral/%s".formatted(name)):
+                modLoc("corral/%s_%s".formatted(name, variant));
+    }
+
+    public ResourceLocation modelId() {
         return modLoc("corral/%s".formatted(getName()));
     }
 

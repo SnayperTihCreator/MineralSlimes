@@ -44,6 +44,13 @@ public abstract class FencePart {
     @SuppressWarnings("unused")
     public CorralBlockEntity getHost() { return host; }
     public float getAngle() { return angle; }
+    public void setAngle(float angle) {
+        float a = angle < 0 ? CENTER : ((angle % 360F) + 360F) % 360F;
+        if (Math.abs(CorralBlockEntity.angleDiff(a, this.angle)) < 0.01F) return;
+        this.angle = a;
+        host.syncToClient();
+    }
+    public ResourceLocation getModelId() { return getType().modelId(); }
 
     public void tick(){}
     public void onAttached(){}

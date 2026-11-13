@@ -1,7 +1,6 @@
 {
 	"format_version": "1.9.0",
-	"credit": "Made with Blockbench",
-	"parent": "cube_all",
+	"parent": "minecraft:block/cube_all",
 	"render_type": "minecraft:cutout",
 	"textures": {
 		"0": "mineralslimes:block/fence",

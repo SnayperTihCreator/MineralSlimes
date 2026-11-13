@@ -24,10 +24,7 @@ public final class CorralHelper {
 
     public static final int MAX_STRUCTURE = 256;
 
-    private static final Direction[] SCAN_DIRECTIONS = {
-            Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST,
-            Direction.DOWN
-    };
+    private static final Direction[] SCAN_DIRECTIONS = {Direction.UP, Direction.DOWN};
 
     private CorralHelper() {}
 
@@ -76,6 +73,7 @@ public final class CorralHelper {
     }
 
     public static void rescan(Level level, BlockPos rootPos) {
+        if (!(level.getBlockState(rootPos.above()).getBlock() instanceof InductorBlock)) return;
         if (!(level.getBlockState(rootPos).getBlock() instanceof CorralBlock)) return;
         if (!(level.getBlockEntity(rootPos) instanceof CorralBlockEntity root)) return;
 
@@ -103,8 +101,7 @@ public final class CorralHelper {
         root.setStructure(structure);
     }
 
-    private static void tryAbsorb(Level level, Set<BlockPos> structure, Queue<BlockPos> queue,
-                                  BlockPos rootPos, BlockPos pos) {
+    private static void tryAbsorb(Level level, Set<BlockPos> structure, Queue<BlockPos> queue, BlockPos rootPos, BlockPos pos) {
         if (structure.contains(pos)) return;
 
         BlockState state = level.getBlockState(pos);
@@ -120,6 +117,25 @@ public final class CorralHelper {
             structure.add(pos);
             queue.add(pos);
         }
+    }
+
+    public static boolean isChargedColumn(Level level, BlockPos pos) {
+        BlockPos cursor = pos.above();
+        while (cursor.getY() <= level.getMaxBuildHeight()) {
+            BlockState state = level.getBlockState(cursor);
+            if (state.getBlock() instanceof InductorBlock) return true;
+            Block block = state.getBlock();
+            if (!(block instanceof CorralBlock) && !isConvertibleFence(state)) return false;
+            cursor = cursor.above();
+        }
+        return false;
+    }
+
+    public static void scheduleColumnRescanIfCharged(Level level, BlockPos pos) {
+        if (!isChargedColumn(level, pos)) return;
+        BlockPos top = pos;
+        while (!(level.getBlockState(top.above()).getBlock() instanceof InductorBlock)) top = top.above();
+        scheduleRescan(level, top);
     }
 
     public static void dissolve(Level level, BlockPos rootPos) {

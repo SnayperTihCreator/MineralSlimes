@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -31,9 +30,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import snaypertihcreator.mineralslimes.common.ModTags;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.CorralHelper;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
+import snaypertihcreator.mineralslimes.common.fance.PartRotator;
 import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
 
 import java.util.Map;
@@ -143,71 +144,78 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
         if (level.isClientSide) return;
         if (!(level.getBlockEntity(pos) instanceof CorralBlockEntity corral)) return;
         BlockPos controller = corral.getControllerPos();
-        if (controller == null) return;
-
-        if (level.getBlockState(controller).getBlock() instanceof CorralBlock)
-            CorralHelper.scheduleRescan(level, controller);
-        else corral.setControllerPos(null);
-
+        if (controller != null) {
+            if (level.getBlockState(controller).getBlock() instanceof CorralBlock)
+                CorralHelper.scheduleRescan(level, controller);
+            else corral.setControllerPos(null);
+            return;
+        }
+        CorralHelper.scheduleColumnRescanIfCharged(level, pos);
     }
 
     @Override
     protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
                                                        @NotNull BlockPos pos, @NotNull Player player,
                                                        @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-        if (stack.getItem() instanceof CorralPartItem<?> part && !player.isShiftKeyDown()){
-            if (level.isClientSide || !(level.getBlockEntity(pos) instanceof CorralBlockEntity corral))
-                return ItemInteractionResult.SUCCESS;
+        if (!(level.getBlockEntity(pos) instanceof CorralBlockEntity corral))
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
+        if (stack.is(ModTags.Items.WRENCH)) {
+            float angle = angleFromHit(hit);
+            if (player.isShiftKeyDown()) {
+                if (level.isClientSide) return ItemInteractionResult.SUCCESS;
+                if (corral.removePartNear(level, angle, FencePart.STEP / 2F) == null)
+                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                var sound = state.getSoundType(level, pos, player).getBreakSound();
+                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
+                return ItemInteractionResult.CONSUME;
+            }
+            boolean hovered = corral.getPartNear(angle, FencePart.STEP / 2F) != null;
+            if (!level.isClientSide) {
+                if (!PartRotator.wrenchUse(player, corral, angle))
+                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            } else if (!hovered) {
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            }
+            return ItemInteractionResult.CONSUME;
+        }
+
+        if (stack.getItem() instanceof CorralPartItem<?> part && !player.isShiftKeyDown()){
+            if (level.isClientSide) return ItemInteractionResult.SUCCESS;
             float angle = FencePart.snap(angleFromHit(hit), FencePart.STEP);
             if (!corral.addPart(part.getType(), angle)) return ItemInteractionResult.CONSUME;
-
             if (!player.isCreative()) stack.shrink(1);
             var sound = state.getSoundType(level, pos, player).getPlaceSound();
             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
             return ItemInteractionResult.CONSUME;
         }
 
-        if (!player.isShiftKeyDown() && level.getBlockEntity(pos) instanceof CorralBlockEntity corral) {
+        if (!player.isShiftKeyDown()) {
             FencePart part = corral.getPartNear(angleFromHit(hit), FencePart.STEP/2F);
             if (part != null) {
                 ItemInteractionResult result = toItemResult(part.onUse(level, player, hand, hit), level);
                 if (result.consumesAction()) return result;
             }
-
-            BlockState fence = corral.getStoredFence() == null? null: corral.getFenceState();
+            BlockState fence = corral.getFenceState();
             if (fence != null) {
                 ItemInteractionResult result = fence.useItemOn(stack, level, player, hand, hit);
                 if (result.consumesAction()) return result;
             }
         }
-
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                                        @NotNull Player player, @NotNull BlockHitResult hit) {
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (!player.isShiftKeyDown()) return InteractionResult.PASS;
-
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CorralBlockEntity corral) {
-            FencePart part = corral.getPartNear(angleFromHit(hit), FencePart.STEP/2F);
-            if (part != null) {
-                Containers.dropItemStack(level, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, part.getType().createStack());
-                corral.removePart(part);
-                var sound = state.getSoundType(level, pos, player).getBreakSound();
-                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-                return InteractionResult.sidedSuccess(false);
-            }
-
-            BlockState fence = corral.getStoredFence() == null? null: corral.getFenceState();
-            if (fence != null) {
-                InteractionResult result = fence.useWithoutItem(level, player, hit);
-                if (result.consumesAction()) return result;
-            }
-
+        if (level.isClientSide || !(level.getBlockEntity(pos) instanceof CorralBlockEntity corral))
+            return InteractionResult.PASS;
+        BlockState fence = corral.getFenceState();
+        if (fence != null) {
+            InteractionResult result = fence.useWithoutItem(level, player, hit);
+            if (result.consumesAction()) return result;
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.PASS;
     }
 
     private VoxelShape combineShapes(BlockGetter level, BlockPos pos) {
@@ -291,23 +299,5 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
             case CONSUME -> ItemInteractionResult.CONSUME;
             default -> ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         };
-    }
-
-    public static boolean isConvertibleFence(@Nullable BlockState state) {
-        return state != null && state.is(BlockTags.FENCES) && !(state.getBlock() instanceof CorralBlock);
-    }
-
-    public static boolean convertFenceToCorral(Level level, BlockPos pos) {
-        BlockState target = level.getBlockState(pos);
-        if (!isConvertibleFence(target)) return false;
-
-        BlockState corralState = ModBlocks.CORRAL.get().defaultBlockState();
-        if (target.hasProperty(BlockStateProperties.WATERLOGGED) && target.getValue(BlockStateProperties.WATERLOGGED))
-            corralState = corralState.setValue(BlockStateProperties.WATERLOGGED, true);
-
-        level.setBlock(pos, corralState, Block.UPDATE_ALL);
-        if (level.getBlockEntity(pos) instanceof CorralBlockEntity corral)
-            corral.setStoredFence(target.getBlock());
-        return true;
     }
 }

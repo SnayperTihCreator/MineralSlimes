@@ -4,6 +4,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.ModPartTypes;
@@ -15,6 +16,7 @@ public final class ModItems {
     public static final DeferredItem<?> PINK_PLORT = createPlort("pink");
     public static final DeferredItem<?> ROCKY_PLORT = createPlort("rocky");
     public static final DeferredItem<?> TUBBY_PLORT = createPlort("tubby");
+    public static final DeferredItem<?> QUANTUM_PLORT = createPlort("quantum");
 
     public static final DeferredItem<?> ODD_ONION = createFood("odd_onion", ModFoods.ODD_ONION_FOOD);
     public static final DeferredItem<?> CUBERRY = createFood("cuberry", ModFoods.CUBERRY_FOOD);
@@ -28,16 +30,19 @@ public final class ModItems {
 
     public static final DeferredItem<?> SUPPORT_PART = createPartItem("support", ModPartTypes.SUPPORT_PART_TYPE);
     public static final DeferredItem<?> GUIDE_PART = createPartItem("guide", ModPartTypes.GUIDE_PART);
+    public static final DeferredItem<?> EMITTER_PART = createPartItem("emitter", ModPartTypes.EMITTER_PART);
 
-    private static DeferredItem<Item> createPlort(String name){
+    public static final DeferredItem<?> TOOL = ITEMS.registerSimpleItem("tool");
+
+    private static @NotNull DeferredItem<Item> createPlort(String name){
         return ITEMS.register(name+"_plort", () -> new Item(new Item.Properties()));
     }
 
-    private static DeferredItem<Item> createFood(String name, FoodProperties p){
+    private static @NotNull DeferredItem<Item> createFood(String name, FoodProperties p){
         return ITEMS.registerSimpleItem(name, new Item.Properties().food(p));
     }
 
-    private static <T extends FencePart> DeferredItem<Item> createPartItem(String name, DeferredPartType<T> holder) {
+    private static <T extends FencePart> @NotNull DeferredItem<Item> createPartItem(String name, DeferredPartType<T> holder) {
         return ITEMS.register(name + "_part", () -> new CorralPartItem<>(holder, new Item.Properties()));
     }
 

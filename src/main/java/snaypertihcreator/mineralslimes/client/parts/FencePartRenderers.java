@@ -9,6 +9,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
+import snaypertihcreator.mineralslimes.client.models.PartModel;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.FencePartType;
 
@@ -25,35 +26,48 @@ public final class FencePartRenderers {
     }
 
     @SuppressWarnings("unchecked")
-    public static  FencePartRenderer<FencePart> get(FencePartType<?> type) {
-        return (FencePartRenderers.FencePartRenderer<FencePart>) RENDERERS.getOrDefault(type, DefaultFencePartRenderer.INSTANCE);
+    public static FencePartRenderer<FencePart> get(FencePartType<?> type) {
+        return (FencePartRenderer<FencePart>) RENDERERS.computeIfAbsent(
+                type, t -> new DefaultFencePartRenderer<>(FenceModelRegister.getModel(t)));
     }
 
     public interface FencePartRenderer<T extends FencePart> {
         void render(T part, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay);
+        PartModel<T> getModel();
     }
 
-    public static class DefaultFencePartRenderer implements FencePartRenderer<FencePart> {
-        public static final DefaultFencePartRenderer INSTANCE = new DefaultFencePartRenderer();
+    public static void drawModel(BakedModel model, RenderType renderType, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
+        VertexConsumer vc = buffers.getBuffer(renderType);
+        Minecraft.getInstance().getBlockRenderer().getModelRenderer()
+                .renderModel(pose.last(), vc, null, model, 1F, 1F, 1F, packedLight, packedOverlay, ModelData.EMPTY, renderType);
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    public static void drawState(BlockState state, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
+        Minecraft.getInstance().getBlockRenderer()
+                .renderSingleBlock(state, pose, buffers, packedLight, packedOverlay, ModelData.EMPTY, null);
+    }
+
+    public static <T extends FencePart> void drawPart(PartModel<T> model, T part,
+                                                      PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        BakedModel baked = model.getModel(part);
+        if (baked != FenceModelRegister.missingModel())
+            drawModel(baked, model.getRenderType(part), pose, buffers, light, overlay);
+        else if (part.getDisplayState() != null)
+            drawState(part.getDisplayState(), pose, buffers, light, overlay);
+    }
+
+    @SuppressWarnings("ClassCanBeRecord")
+    public static class DefaultFencePartRenderer<T extends FencePart> implements FencePartRenderer<T> {
+        private final PartModel<T> model;
+
+        public DefaultFencePartRenderer(PartModel<T> model) { this.model = model; }
+
+        @Override public PartModel<T> getModel() { return model; }
 
         @Override
-        public void render(FencePart part, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-            if (FenceModelRegister.hasModel(part))
-                drawModel(FenceModelRegister.getModel(part), pose, buffers, light, overlay);
-            else if (part.getDisplayState() != null)
-                drawState(part.getDisplayState(), pose, buffers, light, overlay);
-        }
-
-        @SuppressWarnings("deprecation")
-        private void drawState(BlockState state, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
-            Minecraft.getInstance().getBlockRenderer()
-                    .renderSingleBlock(state, pose, buffers, packedLight, packedOverlay);
-        }
-
-        private static void drawModel(BakedModel model, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
-            VertexConsumer vc = buffers.getBuffer(RenderType.cutout());
-            Minecraft.getInstance().getBlockRenderer().getModelRenderer()
-                    .renderModel(pose.last(), vc, null, model, 1F, 1F, 1F, packedLight, packedOverlay, ModelData.EMPTY, RenderType.cutout());
+        public void render(T part, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+            drawPart(getModel(), part, pose, buffers, light, overlay);
         }
     }
 }

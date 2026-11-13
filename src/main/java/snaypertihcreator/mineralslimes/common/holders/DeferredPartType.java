@@ -32,6 +32,6 @@ public class DeferredPartType<T extends FencePart> extends DeferredHolder<FenceP
     }
 
     public ResourceLocation modelId() {
-        return get().getModelId();
+        return get().modelId();
     }
 }

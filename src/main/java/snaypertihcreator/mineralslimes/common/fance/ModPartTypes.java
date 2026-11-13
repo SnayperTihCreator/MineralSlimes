@@ -8,24 +8,25 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
+import snaypertihcreator.mineralslimes.common.fance.parts.EmitterPart;
 import snaypertihcreator.mineralslimes.common.fance.parts.GuidePart;
 import snaypertihcreator.mineralslimes.common.fance.parts.SupportPart;
 import snaypertihcreator.mineralslimes.common.holders.DeferredPartType;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 public final class ModPartTypes {
     public static final Register FENCE_PART_TYPE = new Register(MineralSlimes.MODID);
 
-    public static final DeferredPartType<SupportPart> SUPPORT_PART_TYPE =
-            register("support", SupportPart::new);
+    public static final DeferredPartType<SupportPart> SUPPORT_PART_TYPE = register("support", SupportPart::new);
+    public static final DeferredPartType<GuidePart> GUIDE_PART = register("guide", GuidePart::new);
+    public static final DeferredPartType<EmitterPart>  EMITTER_PART = register("emitter", EmitterPart::new);
 
-    public static final DeferredPartType<GuidePart> GUIDE_PART =
-            register("guide", GuidePart::new);
 
-    private static <T extends FencePart> DeferredPartType<T> register(String name, BiFunction<CorralBlockEntity, Float, T> factory) {
-        return FENCE_PART_TYPE.register(name, factory);
+    private static <T extends FencePart> DeferredPartType<T> register(String name, BiFunction<CorralBlockEntity, Float, T> factory, String... variants) {
+        return FENCE_PART_TYPE.register(name, factory, variants);
     }
 
     public static class Register extends DeferredRegister<FencePartType<?>>{
@@ -39,8 +40,8 @@ public final class ModPartTypes {
             return (DeferredHolder<FencePartType<?>, I>) DeferredPartType.create(key);
         }
 
-        public <T extends FencePart> DeferredPartType<T> register(String name, BiFunction<CorralBlockEntity, Float, T> factory) {
-            return (DeferredPartType<T>) register(name, () -> new FencePartType<>(factory));
+        public <T extends FencePart> DeferredPartType<T> register(String name, BiFunction<CorralBlockEntity, Float, T> factory, String... variants) {
+            return (DeferredPartType<T>) register(name, () -> new FencePartType<>(factory, List.of(variants)));
         }
     }
 }

@@ -48,6 +48,8 @@ runs {
         jvmArgument '-Dfile.encoding=UTF-8'
         jvmArgument '-Dstdout.encoding=UTF-8'
         jvmArgument '-Dstderr.encoding=UTF-8'
+
+        jvmArguments.addAll("--add-modules=jdk.incubator.vector")
     }
 
     client {

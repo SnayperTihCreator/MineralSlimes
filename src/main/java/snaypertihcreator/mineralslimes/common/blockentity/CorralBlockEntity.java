@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -109,6 +110,24 @@ public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReact
             }
         }
         return best;
+    }
+
+    public boolean rotatePart(FencePart part, float newAngle) {
+        if (!parts.contains(part)) return false;
+        FencePart occupant = getPart(part.getType(), newAngle);
+        if (occupant != null && occupant != part) return false;
+        part.setAngle(FencePart.snap(newAngle, FencePart.STEP));
+        return true;
+    }
+
+    @Nullable
+    public FencePart removePartNear(Level level, float angle, float tolerance) {
+        FencePart part = getPartNear(angle, tolerance);
+        if (part == null) return null;
+        Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                worldPosition.getZ() + 0.5, part.getType().createStack());
+        removePart(part);
+        return part;
     }
 
     public static float angleDiff(float a, float b){

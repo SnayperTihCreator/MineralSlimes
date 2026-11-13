@@ -30,6 +30,7 @@ public final class ModCreativeTabs {
             .icon(() -> ModSlimes.PINK.iconEntity().getDefaultInstance())
             .displayItems((param, output) -> {
                 output.accept(ModItems.VAK_PAK);
+                output.accept(ModItems.TOOL);
 
                 for (var holder : ModItems.ITEMS.getEntries()) {
                     if (holder.get().components().has(DataComponents.FOOD)) output.accept(holder.get());

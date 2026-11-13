@@ -39,14 +39,13 @@ public class MineralSlimesClient {
     }
 
     @SubscribeEvent
-    public static void onRegisterAdditional(ModelEvent.RegisterAdditional event){
-        for (var part: ModPartTypes.FENCE_PART_TYPE.getEntries())
-            event.register(modelKey(part.get().getModelId()));
+    public static void onRegisterAdditional(ModelEvent.RegisterAdditional event) {
+        FenceModelRegister.registerModel(event);
     }
 
     @SubscribeEvent
-    public static void onBakingCompleted(ModelEvent.BakingCompleted event){
-        FenceModelRegister.registerModel(event);
+    public static void onBakingCompleted(ModelEvent.BakingCompleted event) {
+        FenceModelRegister.bake(event);
     }
 
     @SubscribeEvent
@@ -67,8 +66,7 @@ public class MineralSlimesClient {
 
             @Override
             public @NotNull BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (this.renderer == null)
-                    this.renderer = new VakPakRenderer();
+                if (this.renderer == null) this.renderer = new VakPakRenderer();
                 return this.renderer;
             }
         }, ModItems.VAK_PAK.get());

@@ -1,8 +1,8 @@
 package snaypertihcreator.mineralslimes.common.blocks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -22,10 +22,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import snaypertihcreator.mineralslimes.common.ModTags;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.blockentity.InductorBlockEntity;
+import snaypertihcreator.mineralslimes.common.blockentity.ModBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.CorralHelper;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
+import snaypertihcreator.mineralslimes.common.fance.PartRotator;
 import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
 
 public class InductorBlock extends Block implements EntityBlock {
@@ -38,7 +41,8 @@ public class InductorBlock extends Block implements EntityBlock {
 
     @Override
     protected boolean canSurvive(@NotNull BlockState state, LevelReader level, BlockPos pos) {
-        return level.getBlockState(pos.below()).getBlock() instanceof CorralBlock;
+        BlockState below = level.getBlockState(pos.below());
+        return below.getBlock() instanceof CorralBlock || CorralHelper.isConvertibleFence(below);
     }
 
     @Override
@@ -68,9 +72,13 @@ public class InductorBlock extends Block implements EntityBlock {
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
         if (level.isClientSide) return null;
-        return (lvl, pos, stt, be) -> {
-            if (be instanceof CorralBlockEntity inductor) inductor.tickParts();
-        };
+        return createTickerHelper(type, ModBlockEntity.INDUCTOR_BE.get(),
+                (lvl, pos, st, be) -> {
+                    if (lvl instanceof ServerLevel server && be instanceof InductorBlockEntity inductor) {
+                        inductor.serverTick(server);
+                        inductor.tickParts();
+                    }
+                });
     }
 
     private VoxelShape combineShapes(BlockGetter level, BlockPos pos) {
@@ -91,48 +99,78 @@ public class InductorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                                       @NotNull BlockPos pos, @NotNull Player player,
-                                                       @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-        if (stack.getItem() instanceof CorralPartItem<?> part && !player.isShiftKeyDown()) {
-            if (level.isClientSide || !(level.getBlockEntity(pos) instanceof CorralBlockEntity inductor))
-                return ItemInteractionResult.SUCCESS;
+    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
+        if (!(level.getBlockEntity(pos) instanceof CorralBlockEntity inductor))
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 
+        if (stack.is(ModTags.Items.WRENCH)) {
+            float angle = FencePart.angleFrom(hit.getBlockPos(), hit.getLocation());
+            if (player.isShiftKeyDown()) {
+                if (level.isClientSide) return ItemInteractionResult.SUCCESS;
+                if (inductor.removePartNear(level, angle, FencePart.STEP / 2F) == null)
+                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                var sound = state.getSoundType(level, pos, player).getBreakSound();
+                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
+                return ItemInteractionResult.CONSUME;
+            }
+            boolean hovered = inductor.getPartNear(angle, FencePart.STEP / 2F) != null;
+            if (!level.isClientSide) if (!PartRotator.wrenchUse(player, inductor, angle))
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            else if (!hovered)
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
+            return ItemInteractionResult.CONSUME;
+        }
+
+        if (stack.getItem() instanceof CorralPartItem<?> part && !player.isShiftKeyDown()) {
+            if (level.isClientSide) return ItemInteractionResult.SUCCESS;
             float angle = FencePart.snap(FencePart.angleFrom(hit.getBlockPos(), hit.getLocation()), FencePart.STEP);
             if (!inductor.addPart(part.getType(), angle)) return ItemInteractionResult.CONSUME;
-
             if (!player.isCreative()) stack.shrink(1);
             var sound = state.getSoundType(level, pos, player).getPlaceSound();
             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
             return ItemInteractionResult.CONSUME;
         }
 
-        if (!player.isShiftKeyDown() && level.getBlockEntity(pos) instanceof CorralBlockEntity inductor) {
+        if (!player.isShiftKeyDown()) {
             FencePart part = inductor.getPartNear(FencePart.angleFrom(hit.getBlockPos(), hit.getLocation()), FencePart.STEP / 2F);
             if (part != null) {
                 ItemInteractionResult result = CorralBlock.toItemResult(part.onUse(level, player, hand, hit), level);
                 if (result.consumesAction()) return result;
             }
         }
-
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                                        @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (!player.isShiftKeyDown()) return InteractionResult.PASS;
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+        return InteractionResult.PASS;
+    }
 
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CorralBlockEntity inductor) {
-            FencePart part = inductor.getPartNear(FencePart.angleFrom(hit.getBlockPos(), hit.getLocation()), FencePart.STEP / 2F);
-            if (part != null) {
-                Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, part.getType().createStack());
-                inductor.removePart(part);
-                var sound = state.getSoundType(level, pos, player).getBreakSound();
-                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-                return InteractionResult.sidedSuccess(false);
-            }
+    @Override
+    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                           @NotNull BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (level.isClientSide || movedByPiston) return;
+        convertColumnBelow(level, pos);
+    }
+
+    private static void convertColumnBelow(Level level, BlockPos inductorPos) {
+        boolean first = true;
+        BlockPos cursor = inductorPos.below();
+        while (cursor.getY() >= level.getMinBuildHeight()) {
+            BlockState state = level.getBlockState(cursor);
+            if (CorralHelper.isConvertibleFence(state)) {
+                CorralHelper.convertFenceToCorral(level, cursor, first);
+                first = false;
+            } else if (!(state.getBlock() instanceof CorralBlock)) break;
+            cursor = cursor.below();
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> serverType, BlockEntityType<E> clientType, BlockEntityTicker<? super E> ticker) {
+        return clientType == serverType ? (BlockEntityTicker<A>)ticker : null;
     }
 }
