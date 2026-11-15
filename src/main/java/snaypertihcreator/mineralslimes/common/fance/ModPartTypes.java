@@ -10,7 +10,6 @@ import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.parts.EmitterPart;
 import snaypertihcreator.mineralslimes.common.fance.parts.GuidePart;
-import snaypertihcreator.mineralslimes.common.fance.parts.SupportPart;
 import snaypertihcreator.mineralslimes.common.holders.DeferredPartType;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
 
@@ -20,7 +19,6 @@ import java.util.function.BiFunction;
 public final class ModPartTypes {
     public static final Register FENCE_PART_TYPE = new Register(MineralSlimes.MODID);
 
-    public static final DeferredPartType<SupportPart> SUPPORT_PART_TYPE = register("support", SupportPart::new);
     public static final DeferredPartType<GuidePart> GUIDE_PART = register("guide", GuidePart::new);
     public static final DeferredPartType<EmitterPart>  EMITTER_PART = register("emitter", EmitterPart::new);
 

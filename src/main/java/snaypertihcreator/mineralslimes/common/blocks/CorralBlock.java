@@ -3,7 +3,6 @@ package snaypertihcreator.mineralslimes.common.blocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -25,21 +24,16 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import snaypertihcreator.mineralslimes.common.ModTags;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.CorralHelper;
-import snaypertihcreator.mineralslimes.common.fance.FencePart;
-import snaypertihcreator.mineralslimes.common.fance.PartRotator;
-import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
 
 import java.util.Map;
 
-public class CorralBlock extends Block implements EntityBlock, SimpleWaterloggedBlock {
+public class CorralBlock extends PartHolderBlock implements SimpleWaterloggedBlock {
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
 
     public static final Map<Direction, BooleanProperty> CONNECTIONS = Map.of(
@@ -154,58 +148,6 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                                       @NotNull BlockPos pos, @NotNull Player player,
-                                                       @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof CorralBlockEntity corral))
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-
-        if (stack.is(ModTags.Items.WRENCH)) {
-            float angle = angleFromHit(hit);
-            if (player.isShiftKeyDown()) {
-                if (level.isClientSide) return ItemInteractionResult.SUCCESS;
-                if (corral.removePartNear(level, angle, FencePart.STEP / 2F) == null)
-                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-                var sound = state.getSoundType(level, pos, player).getBreakSound();
-                level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-                return ItemInteractionResult.CONSUME;
-            }
-            boolean hovered = corral.getPartNear(angle, FencePart.STEP / 2F) != null;
-            if (!level.isClientSide) {
-                if (!PartRotator.wrenchUse(player, corral, angle))
-                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-            } else if (!hovered) {
-                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-            }
-            return ItemInteractionResult.CONSUME;
-        }
-
-        if (stack.getItem() instanceof CorralPartItem<?> part && !player.isShiftKeyDown()){
-            if (level.isClientSide) return ItemInteractionResult.SUCCESS;
-            float angle = FencePart.snap(angleFromHit(hit), FencePart.STEP);
-            if (!corral.addPart(part.getType(), angle)) return ItemInteractionResult.CONSUME;
-            if (!player.isCreative()) stack.shrink(1);
-            var sound = state.getSoundType(level, pos, player).getPlaceSound();
-            level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-            return ItemInteractionResult.CONSUME;
-        }
-
-        if (!player.isShiftKeyDown()) {
-            FencePart part = corral.getPartNear(angleFromHit(hit), FencePart.STEP/2F);
-            if (part != null) {
-                ItemInteractionResult result = toItemResult(part.onUse(level, player, hand, hit), level);
-                if (result.consumesAction()) return result;
-            }
-            BlockState fence = corral.getFenceState();
-            if (fence != null) {
-                ItemInteractionResult result = fence.useItemOn(stack, level, player, hand, hit);
-                if (result.consumesAction()) return result;
-            }
-        }
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-
-    @Override
     protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (!player.isShiftKeyDown()) return InteractionResult.PASS;
         if (level.isClientSide || !(level.getBlockEntity(pos) instanceof CorralBlockEntity corral))
@@ -216,26 +158,6 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
             if (result.consumesAction()) return result;
         }
         return InteractionResult.PASS;
-    }
-
-    private VoxelShape combineShapes(BlockGetter level, BlockPos pos) {
-        VoxelShape shape = Shapes.empty();
-        if (level.getBlockEntity(pos) instanceof CorralBlockEntity corral) {
-            BlockState fence = corral.getFenceState();
-            if (fence != null) shape = fence.getShape(level, pos);
-            for (var part : corral.getParts()) shape = Shapes.or(shape, part.getShape());
-        }
-        return shape.isEmpty()? SHAPE: shape;
-    }
-
-    @Override
-    protected @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return combineShapes(level, pos);
-    }
-
-    @Override
-    protected @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return combineShapes(level, pos);
     }
 
     @Override
@@ -286,18 +208,21 @@ public class CorralBlock extends Block implements EntityBlock, SimpleWaterlogged
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
-    private static float angleFromHit(@NotNull BlockHitResult hit){
-        double dx = hit.getLocation().x - (hit.getBlockPos().getX() + 0.5);
-        double dz = hit.getLocation().z - (hit.getBlockPos().getZ() + 0.5);
-        float angle = (float) Math.toDegrees(Math.atan2(dx, -dz));
-        return angle < 0? angle + 360F : angle;
+    @Override
+    protected VoxelShape baseShape(BlockGetter level, BlockPos pos, @Nullable CorralBlockEntity holder) {
+        BlockState fence = holder != null ? holder.getFenceState() : null;
+        VoxelShape shape = fence != null ? fence.getShape(level, pos) : Shapes.empty();
+        return shape.isEmpty() ? SHAPE : shape;
     }
 
-    public static ItemInteractionResult toItemResult(InteractionResult result, Level level) {
-        return switch (result){
-            case SUCCESS, SUCCESS_NO_ITEM_USED -> level.isClientSide ? ItemInteractionResult.SUCCESS : ItemInteractionResult.CONSUME;
-            case CONSUME -> ItemInteractionResult.CONSUME;
-            default -> ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        };
+    @Override
+    protected ItemInteractionResult extraUseItemOn(CorralBlockEntity holder, ItemStack stack, BlockState state, Level level,
+                                                   BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        BlockState fence = holder.getFenceState();
+        if (fence != null) {
+            ItemInteractionResult result = fence.useItemOn(stack, level, player, hand, hit);
+            if (result.consumesAction()) return result;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }

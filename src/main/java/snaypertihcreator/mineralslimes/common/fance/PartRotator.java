@@ -11,7 +11,9 @@ public final class PartRotator {
     private PartRotator() {}
 
     private static final long TIMEOUT_TICKS = 60;
+    public static final float GRAB_TOLERANCE = FencePart.STEP * 1.5F;
     private static final Map<UUID, Drag> DRAGS = new HashMap<>();
+
 
     private record Drag(CorralBlockEntity host, FencePart part, long time) {};
 
@@ -23,13 +25,13 @@ public final class PartRotator {
             d = null;
 
         if (d == null) {
-            FencePart part = host.getPartNear(hitAngle, FencePart.STEP / 2F);
+            FencePart part = host.getPartNear(hitAngle, GRAB_TOLERANCE);
             if (part == null) return false;
             DRAGS.put(player.getUUID(), new Drag(host, part, now));
             return true;
         }
 
-        FencePart hovered = host.getPartNear(hitAngle, FencePart.STEP / 2F);
+        FencePart hovered = host.getPartNear(hitAngle, GRAB_TOLERANCE);
         if (hovered != null && hovered != d.part) {
             DRAGS.put(player.getUUID(), new Drag(host, hovered, now));
             return true;

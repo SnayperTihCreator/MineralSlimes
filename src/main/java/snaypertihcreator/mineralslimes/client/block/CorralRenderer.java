@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.client.parts.FencePartRenderers;
+import snaypertihcreator.mineralslimes.client.parts.WrenchArrowRenderer;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 
@@ -30,6 +31,8 @@ public class CorralRenderer implements BlockEntityRenderer<CorralBlockEntity> {
             renderer.render(part, partialTick,  pose, buffers, packedLight, packedOverlay);
             pose.popPose();
         }
+
+        WrenchArrowRenderer.tryRender(corral.getBlockPos(), pose, buffers);
     }
 
     @SuppressWarnings("deprecation")

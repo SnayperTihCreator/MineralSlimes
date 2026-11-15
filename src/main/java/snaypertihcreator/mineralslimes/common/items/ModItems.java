@@ -28,7 +28,6 @@ public final class ModItems {
 
     public static final DeferredItem<?> VAK_PAK = ITEMS.register("vak_pak", VakPakItem::new);
 
-    public static final DeferredItem<?> SUPPORT_PART = createPartItem("support", ModPartTypes.SUPPORT_PART_TYPE);
     public static final DeferredItem<?> GUIDE_PART = createPartItem("guide", ModPartTypes.GUIDE_PART);
     public static final DeferredItem<?> EMITTER_PART = createPartItem("emitter", ModPartTypes.EMITTER_PART);
 

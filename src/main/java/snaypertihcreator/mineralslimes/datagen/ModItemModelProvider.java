@@ -20,14 +20,14 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
         basicItem(ModItems.ROCKY_PLORT.get());
         basicItem(ModItems.TUBBY_PLORT.get());
         basicItem(ModItems.QUANTUM_PLORT.get());
+        basicItem(ModItems.TOOL.get());
 
         foodItem(ModItems.ODD_ONION);
         foodItem(ModItems.CUBERRY);
         foodItem(ModItems.MINT_MANGO);
         foodItem(ModItems.PRICKLE_PEAR);
         foodItem(ModItems.OCA_OCA);
-        // TODO Возможные изменения текстуры
-        foodItem(ModItems.PHASE_LEMON);
+        foodItem(ModItems.PHASE_LEMON); // TODO Возможные изменения текстуры
         foodItem(ModItems.POLARICHERRY);
 
         slimeIcon(ModSlimes.PINK);
@@ -36,8 +36,10 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
 
         simpleBlockItem(ModBlocks.CORRAL.get());
         simpleBlockItem(ModBlocks.INDUCTOR.get(), 0.75F);
-        simplePartItem(ModPartTypes.GUIDE_PART.get(), ModItems.GUIDE_PART);
 
-        basicItem(ModItems.TOOL.get());
+        simplePartItem(ModPartTypes.GUIDE_PART.get(), ModItems.GUIDE_PART);
+        simplePartItem(ModPartTypes.EMITTER_PART.get(), ModItems.EMITTER_PART);
+
+
     }
 }

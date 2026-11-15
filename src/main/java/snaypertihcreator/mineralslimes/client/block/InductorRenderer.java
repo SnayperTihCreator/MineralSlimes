@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.client.parts.FencePartRenderers;
+import snaypertihcreator.mineralslimes.client.parts.WrenchArrowRenderer;
 import snaypertihcreator.mineralslimes.common.blockentity.InductorBlockEntity;
 
 public class InductorRenderer implements BlockEntityRenderer<InductorBlockEntity> {
@@ -21,6 +22,8 @@ public class InductorRenderer implements BlockEntityRenderer<InductorBlockEntity
             renderer.render(part, partialTick, pose, buffers, packedLight, packedOverlay);
             pose.popPose();
         }
+
+        WrenchArrowRenderer.tryRender(inductor.getBlockPos(), pose, buffers);
     }
 
     @Override

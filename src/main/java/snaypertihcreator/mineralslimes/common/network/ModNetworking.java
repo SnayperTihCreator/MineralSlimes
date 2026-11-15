@@ -2,15 +2,21 @@ package snaypertihcreator.mineralslimes.common.network;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
+import snaypertihcreator.mineralslimes.common.ModTags;
+import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
+import snaypertihcreator.mineralslimes.common.blocks.InductorBlock;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakInventory;
 import snaypertihcreator.mineralslimes.common.items.VakPakItem;
 
@@ -79,5 +85,13 @@ public class ModNetworking {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         VACUUMING.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        BlockState state = event.getLevel().getBlockState(event.getPos());
+        if (!(state.getBlock() instanceof CorralBlock) && !(state.getBlock() instanceof InductorBlock)) return;
+        if (!event.getItemStack().is(ModTags.Items.WRENCH)) return;
+        event.setUseBlock(TriState.TRUE);
     }
 }
