@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.client.parts.FencePartRenderers;
 import snaypertihcreator.mineralslimes.client.parts.WrenchArrowRenderer;
@@ -35,12 +36,12 @@ public class CorralRenderer implements BlockEntityRenderer<CorralBlockEntity> {
         WrenchArrowRenderer.tryRender(corral.getBlockPos(), pose, buffers);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("DataFlowIssue")
     private void renderFence(CorralBlockEntity corral, BlockState fence, PoseStack pose, MultiBufferSource buffers, int packedLight, int packedOverlay) {
         if (fence == null) return;
         int light = corral.getLevel() == null? packedLight:
                 LevelRenderer.getLightColor(corral.getLevel(), corral.getBlockPos());
-        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(fence, pose, buffers, light, packedOverlay);
+        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(fence, pose, buffers, light, packedOverlay, ModelData.EMPTY, null);
     }
 
     protected static void transformToPart(PoseStack pose, FencePart part) {

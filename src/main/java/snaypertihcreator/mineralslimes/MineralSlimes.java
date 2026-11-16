@@ -34,6 +34,7 @@ import snaypertihcreator.mineralslimes.common.config.Config;
 import snaypertihcreator.mineralslimes.common.entity.ModEntities;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.recipes.ModRecipes;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 import snaypertihcreator.mineralslimes.datagen.ModLootTableProvider;
 import snaypertihcreator.mineralslimes.datagen.ModRecipeProvider;
 import snaypertihcreator.mineralslimes.datagen.ModSlimeAnimationProvider;
@@ -54,6 +55,7 @@ public class MineralSlimes {
 
     public MineralSlimes(IEventBus modEventBus, @NotNull ModContainer modContainer) {
         ModDataComponents.COMPONENTS.register(modEventBus);
+        ModUpgradeTypes.UPGRADE_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModPartTypes.FENCE_PART_TYPE.register(modEventBus);

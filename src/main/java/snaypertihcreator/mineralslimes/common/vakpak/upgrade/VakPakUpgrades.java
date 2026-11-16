@@ -6,7 +6,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -24,10 +25,10 @@ public final class VakPakUpgrades {
         @Override
         public @NotNull VakPakUpgrades decode(RegistryFriendlyByteBuf buf) {
             int size = buf.readVarInt();
-            Map<VakPakUpgradeType, VakPakUpgrade> map = new EnumMap<>(VakPakUpgradeType.class);
+            Map<VakPakUpgradeType, VakPakUpgrade> map = new HashMap<>();
             for (int i = 0; i < size; i++) {
                 VakPakUpgrade upgrade = VakPakUpgrade.STREAM_CODEC.decode(buf);
-                map.put(upgrade.type(), upgrade);
+                map.put(upgrade.getType(), upgrade);
             }
             return new VakPakUpgrades(map);
         }
@@ -45,43 +46,41 @@ public final class VakPakUpgrades {
     private final Map<VakPakUpgradeType, VakPakUpgrade> upgrades;
 
     public VakPakUpgrades(Map<VakPakUpgradeType, VakPakUpgrade> upgrades) {
-        this.upgrades = Map.copyOf(upgrades);
+        this.upgrades = new HashMap<>(upgrades);
     }
 
     public Map<VakPakUpgradeType, VakPakUpgrade> upgradesMap() {
-        return upgrades;
+        return Collections.unmodifiableMap(upgrades);
     }
 
-    public int level(VakPakUpgradeType type) {
-        VakPakUpgrade u = upgrades.get(type);
-        return u == null ? 0 : u.level();
+    public int level(VakPakUpgradeLike typeLike) {
+        VakPakUpgrade u = upgrades.get(typeLike.getType());
+        return u == null ? 0 : u.getLevel();
     }
 
-    public boolean has(VakPakUpgradeType type) { return level(type) > 0; }
-
-    public boolean isMaxed(VakPakUpgradeType type) { return level(type) >= type.getMaxLevel(); }
+    public boolean has(VakPakUpgradeLike type) { return level(type) > 0; }
+    public boolean isMaxed(VakPakUpgradeType type) { return level(type) >= type.maxLevel(); }
 
     public VakPakUpgrades withLevel(VakPakUpgradeType type, int newLevel) {
-        Map<VakPakUpgradeType, VakPakUpgrade> copy = new EnumMap<>(VakPakUpgradeType.class);
-        copy.putAll(upgrades);
-        copy.put(type, new VakPakUpgrade(type, newLevel));
+        VakPakUpgrade up = upgrades.get(type);
+        VakPakUpgrade next = up == null ? new VakPakUpgrade(type, newLevel) : up.withLevel(newLevel);
+        Map<VakPakUpgradeType, VakPakUpgrade> copy = new HashMap<>(upgrades);
+        copy.put(type, next);
         return new VakPakUpgrades(copy);
     }
 
-    public VakPakUpgrades addLevel(VakPakUpgradeType type) {
-        return withLevel(type, level(type) + 1);
+    public VakPakUpgrades addLevel(VakPakUpgradeLike type) {
+        return withLevel(type.getType(), level(type) + 1);
     }
 
     public VakPakUpgrades reset(VakPakUpgradeType type) {
-        Map<VakPakUpgradeType, VakPakUpgrade> copy = new EnumMap<>(VakPakUpgradeType.class);
-        copy.putAll(upgrades);
+        if (!upgrades.containsKey(type)) return this;
+        Map<VakPakUpgradeType, VakPakUpgrade> copy = new HashMap<>(upgrades);
         copy.remove(type);
         return new VakPakUpgrades(copy);
     }
 
-    public VakPakUpgrades resetAll() {
-        return EMPTY;
-    }
+    public VakPakUpgrades resetAll() { return EMPTY; }
 
     @Override
     public boolean equals(Object o) {
@@ -91,14 +90,10 @@ public final class VakPakUpgrades {
     }
 
     @Override
-    public int hashCode() {
-        return upgrades.hashCode();
-    }
+    public int hashCode() { return upgrades.hashCode(); }
 
     @Override
     public String toString() {
-        return upgrades.values().stream()
-                .map(u -> u.type() + "=" + u.level())
-                .collect(Collectors.joining(", ", "Upgrades[", "]"));
+        return upgrades.values().stream().map(u -> u.getType() + "=" + u.getLevel()).collect(Collectors.joining(", ", "Upgrades[", "]"));
     }
 }

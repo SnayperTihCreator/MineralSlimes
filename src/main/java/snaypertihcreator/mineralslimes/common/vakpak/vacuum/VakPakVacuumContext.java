@@ -6,11 +6,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.*;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("unused")
 public class VakPakVacuumContext {
     public enum Result { DEFAULT, ABSORBED, REFLECTED }
 
@@ -55,15 +55,15 @@ public class VakPakVacuumContext {
         return level instanceof ServerLevel sl ? sl : null;
     }
 
-    public boolean hasUpgrade(VakPakUpgradeType type) { return upgrades.has(type); }
+    public boolean hasUpgrade(VakPakUpgradeLike type) { return upgrades.has(type); }
 
-    public boolean withUpgrade(VakPakUpgradeType type, Runnable action) {
+    public boolean withUpgrade(VakPakUpgradeLike type, Runnable action) {
         if (!hasUpgrade(type)) return false;
         action.run();
         return true;
     }
 
     public boolean harvest(Runnable action) {
-        return withUpgrade(VakPakUpgradeType.WORLD_HARVEST, action);
+        return withUpgrade(ModUpgradeTypes.WORLD_HARVEST, action);
     }
 }

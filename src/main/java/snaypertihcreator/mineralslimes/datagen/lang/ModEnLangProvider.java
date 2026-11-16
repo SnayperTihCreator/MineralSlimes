@@ -8,14 +8,13 @@ import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.guide.SlimeContextTag;
-import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotType;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotWater;
 import snaypertihcreator.mineralslimes.common.items.ModCreativeTabs;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEmpty;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEntity;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 
 public class ModEnLangProvider extends LanguageProvider {
     public ModEnLangProvider(PackOutput output) {
@@ -51,22 +50,15 @@ public class ModEnLangProvider extends LanguageProvider {
         add(VakPakSlotEntity.UNKNOWN_ENTITY, "Unnamed Entity");
         add(VakPakSlotWater.DISPLAY_NAME, "Water (%s/%s)");
 
-        for (var type : VakPakUpgradeType.values()) {
-            add(type.displayName(), switch (type) {
-                case SLOT_STACK   -> "Slot Stack";
-                case SLOT_COUNT   -> "Slot Count";
-                case LIQUID_SLOT  -> "Liquid Slot";
-                case WORLD_HARVEST -> "World Harvest";
-                case PULSE_WAVE   -> "Pulse Wave";
-                case LOOT_MUL     -> "Loot Multiplier";
-            });
-            add(type.levelName(0), switch (type) {
-                case SLOT_STACK   -> "Slot Stack %s/%s";
-                case SLOT_COUNT   -> "Slot Count %s/%s";
-                case LIQUID_SLOT  -> "Liquid Slot %s/%s";
-                case WORLD_HARVEST -> "World Harvest %s/%s";
-                case PULSE_WAVE   -> "Pulse Wave %s/%s";
-                case LOOT_MUL     -> "Loot Multiplier %s/%s";
+        for (var holder: ModUpgradeTypes.all()){
+            addUpgrade(holder.displayName(), holder.levelName(0), switch (holder.id().getPath()){
+                case "slot_stack"   -> "Slot Stack";
+                case "slot_count"   -> "Slot Count";
+                case "liquid_slot"  -> "Liquid Slot";
+                case "world_harvest" -> "World Harvest";
+                case "pulse_wave"   -> "Pulse Wave";
+                case "loot_mul"     -> "Loot Multiplier";
+                default -> "Unknown";
             });
         }
 
@@ -76,6 +68,11 @@ public class ModEnLangProvider extends LanguageProvider {
         add(ModCreativeTabs.PLORT_TAB.get().getDisplayName(), "Plorts");
         add(ModCreativeTabs.SLIMES_TAB.get().getDisplayName(), "Slimes");
         add(SlimeContextTag.LIKE_FOODS_NONE, "None");
+    }
+
+    protected void addUpgrade(Component display, Component levelName, String name) {
+        add(display, name);
+        add(levelName, "%s %%s/%%s".formatted(name));
     }
 
     public void add(Component text, String value) {

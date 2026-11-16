@@ -5,7 +5,8 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.DeferredUpgradeType;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
 import snaypertihcreator.mineralslimes.common.vakpak.vacuum.VakPakVacuumContext;
 
@@ -33,13 +34,13 @@ public final class VakPakSlotType {
     private final Supplier<MapCodec<? extends VakPakSlot>> codec;
 
     @Nullable
-    private final VakPakUpgradeType requiredUpgrade;
+    private final DeferredUpgradeType holderUpgradeType;
 
     private VakPakSlotType(
             ResourceLocation id, Supplier<MapCodec<? extends VakPakSlot>> codecSupplier,
             Predicate<Entity> entityFactoryTester, Function<Entity, VakPakSlot> entityFactory,
             Predicate<BlockState> blockFactoryTester, Function<VakPakVacuumContext, VakPakSlot> blockFactory,
-            @Nullable VakPakUpgradeType requiredUpgrade
+            @Nullable DeferredUpgradeType holderUpgradeType
     ) {
         this.id = id;
         this.codec = codecSupplier;
@@ -47,7 +48,7 @@ public final class VakPakSlotType {
         this.entityFactory = entityFactory;
         this.blockFactoryTester = blockFactoryTester;
         this.blockFactory = blockFactory;
-        this.requiredUpgrade = requiredUpgrade;
+        this.holderUpgradeType = holderUpgradeType;
     }
 
     public static VakPakSlotType register(
@@ -63,10 +64,10 @@ public final class VakPakSlotType {
             ResourceLocation id, Supplier<MapCodec<? extends VakPakSlot>> codecSupplier,
             Predicate<Entity> entityFactoryTester, Function<Entity, VakPakSlot> entityFactory,
             Predicate<BlockState> blockFactoryTester, Function<VakPakVacuumContext, VakPakSlot> blockFactory,
-            @Nullable VakPakUpgradeType requiredUpgrade
+            @Nullable DeferredUpgradeType holderUpgradeType
     ) {
         VakPakSlotType type = new VakPakSlotType(id, codecSupplier, entityFactoryTester, entityFactory,
-                blockFactoryTester, blockFactory, requiredUpgrade);
+                blockFactoryTester, blockFactory, holderUpgradeType);
         if (REGISTRY.putIfAbsent(id, type) != null)
             throw new IllegalStateException("Duplicate VakPakSlotType: " + id);
         return type;
@@ -98,10 +99,10 @@ public final class VakPakSlotType {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canCreateWith(@Nullable VakPakUpgrades upgrades) {
-        return requiredUpgrade == null || (upgrades != null && upgrades.level(requiredUpgrade) > 0);
+        return holderUpgradeType == null || (upgrades != null && upgrades.level(holderUpgradeType) > 0);
     }
 
-    public boolean isDedicatedZone() { return requiredUpgrade != null; }
+    public boolean isDedicatedZone() { return holderUpgradeType != null; }
 
     public static final Codec<VakPakSlotType> CODEC = ResourceLocation.CODEC.xmap(VakPakSlotType::byId, VakPakSlotType::getId);
 
@@ -127,6 +128,6 @@ public final class VakPakSlotType {
             modLoc("water"), () -> VakPakSlotWater.CODEC,
             VakPakSlotWater::canCreateFromEntity, VakPakSlotWater::createFromEntity,
             VakPakSlotWater::canCreateFromBlock, VakPakSlotWater::createFromBlock,
-            VakPakUpgradeType.LIQUID_SLOT
+            ModUpgradeTypes.LIQUID_SLOT
     );
 }

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
 import snaypertihcreator.mineralslimes.common.vakpak.vacuum.VakPakVacuumContext;
 
@@ -49,12 +49,12 @@ public final class VakPakInventory {
 
     public static int maxRegularSlots(@Nullable VakPakUpgrades upgrades) {
         int result = MIN_SLOTS;
-        if (upgrades != null) result += upgrades.level(VakPakUpgradeType.SLOT_COUNT);
+        if (upgrades != null) result += upgrades.level(ModUpgradeTypes.SLOT_COUNT);
         return result;
     }
 
     public static int waterSlotCount(@Nullable VakPakUpgrades upgrades) {
-        return upgrades == null ? 0 : upgrades.level(VakPakUpgradeType.LIQUID_SLOT);
+        return upgrades == null ? 0 : upgrades.level(ModUpgradeTypes.LIQUID_SLOT);
     }
 
     @SuppressWarnings("unused")

@@ -8,8 +8,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.common.recipes.VakPakUpgradeRecipe;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
-import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +25,7 @@ public class ModRecipeProvider extends RecipeProvider {
     protected void buildRecipes(@NotNull RecipeOutput output) {
         output.accept(
                 modLoc("vakpak_upgrade/damage"),
-                new VakPakUpgradeRecipe(List.of(Ingredient.of(Items.WATER_BUCKET)), VakPakUpgradeType.LIQUID_SLOT, 1),
+                new VakPakUpgradeRecipe(List.of(Ingredient.of(Items.WATER_BUCKET)), ModUpgradeTypes.LIQUID_SLOT, 1),
                 null // без advancement
         );
     }

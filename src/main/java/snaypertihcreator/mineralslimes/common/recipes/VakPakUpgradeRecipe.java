@@ -1,5 +1,6 @@
 package snaypertihcreator.mineralslimes.common.recipes;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
@@ -14,20 +15,21 @@ import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.items.VakPakItem;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeLike;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
 import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgrades;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class VakPakUpgradeRecipe implements CraftingRecipe {
+public record VakPakUpgradeRecipe(List<Ingredient> ingredients, VakPakUpgradeLike upgrade, int levels) implements CraftingRecipe {
 
     public static final MapCodec<VakPakUpgradeRecipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients")
                     .forGetter(r -> r.ingredients),
             VakPakUpgradeType.CODEC.fieldOf("upgrade")
-                    .forGetter(r -> r.upgrade),
-            com.mojang.serialization.Codec.intRange(1, 5).optionalFieldOf("levels", 1)
+                    .forGetter(r -> r.upgrade.getType()),
+            Codec.intRange(1, 5).optionalFieldOf("levels", 1)
                     .forGetter(r -> r.levels)
     ).apply(inst, VakPakUpgradeRecipe::new));
 
@@ -36,17 +38,13 @@ public final class VakPakUpgradeRecipe implements CraftingRecipe {
                     Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()),
                     r -> r.ingredients,
                     VakPakUpgradeType.STREAM_CODEC,
-                    r -> r.upgrade,
+                    r -> r.upgrade.getType(),
                     ByteBufCodecs.VAR_INT,
                     r -> r.levels,
                     VakPakUpgradeRecipe::new
             );
 
-    private final List<Ingredient> ingredients;
-    private final VakPakUpgradeType upgrade;
-    private final int levels;
-
-    public VakPakUpgradeRecipe(List<Ingredient> ingredients, VakPakUpgradeType upgrade, int levels) {
+    public VakPakUpgradeRecipe(List<Ingredient> ingredients, VakPakUpgradeLike upgrade, int levels) {
         this.ingredients = List.copyOf(ingredients);
         this.upgrade = upgrade;
         this.levels = levels;
@@ -84,7 +82,7 @@ public final class VakPakUpgradeRecipe implements CraftingRecipe {
         }
 
         VakPakUpgrades current = vakpak.getOrDefault(ModDataComponents.VAKPAK_UPGRADES, VakPakUpgrades.EMPTY);
-        return current.level(upgrade) + levels <= upgrade.getMaxLevel();
+        return current.level(upgrade) + levels <= upgrade.getType().maxLevel();
     }
 
     @Override
@@ -135,18 +133,6 @@ public final class VakPakUpgradeRecipe implements CraftingRecipe {
     @Override
     public @NotNull String getGroup() {
         return "vakpak_upgrade";
-    }
-
-    public List<Ingredient> ingredients() {
-        return ingredients;
-    }
-
-    public VakPakUpgradeType upgrade() {
-        return upgrade;
-    }
-
-    public int levels() {
-        return levels;
     }
 
     @Override

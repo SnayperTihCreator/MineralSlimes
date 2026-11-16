@@ -60,6 +60,11 @@ public class ModRuLangProvider extends LanguageProvider {
 
     }
 
+    protected void addUpgrade(Component display, Component levelName, String name) {
+        add(display, name);
+        add(levelName, "%s %%s/%%s".formatted(name));
+    }
+
     public void add(Component text, String value) {
         if (text.getContents() instanceof TranslatableContents tc)
             add(tc.getKey(), value);
