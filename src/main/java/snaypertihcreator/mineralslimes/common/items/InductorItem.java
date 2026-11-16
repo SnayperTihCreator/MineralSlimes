@@ -1,5 +1,6 @@
 package snaypertihcreator.mineralslimes.common.items;
 
+import net.minecraft.world.level.block.WallBlock;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -23,8 +24,10 @@ public class InductorItem extends BlockItem {
     @Override
     protected boolean canPlace(@NotNull BlockPlaceContext context, @NotNull BlockState state) {
         if (super.canPlace(context, state)) return true;
+        Level level = context.getLevel();
         BlockPos below = context.getClickedPos().below();
-        return context.getClickedFace() == Direction.UP && context.getLevel().getBlockState(below).is(BlockTags.FENCES);
+        BlockState support = level.getBlockState(below);
+        return context.getClickedFace() == Direction.UP && (support.is(BlockTags.FENCES) || support.getBlock() instanceof WallBlock);
     }
 
     @Override
@@ -33,7 +36,8 @@ public class InductorItem extends BlockItem {
         BlockPos below = context.getClickedPos().below();
         if (!(level.getBlockState(below).getBlock() instanceof CorralBlock))
             CorralHelper.convertFenceToCorral(level, below, !level.isClientSide);
-        CorralHelper.rescan(level, below);
-        return super.placeBlock(context, state);
+        boolean placed = super.placeBlock(context, state);
+        if (placed) CorralHelper.rescan(level, below);
+        return placed;
     }
 }

@@ -94,7 +94,8 @@ public class CorralBlock extends PartHolderBlock implements SimpleWaterloggedBlo
     private static boolean connectsTo(BlockState state, boolean sideSolid, Direction dir) {
         boolean fence = state.is(BlockTags.FENCES) && !state.is(Blocks.NETHER_BRICK_FENCE);
         boolean gate = state.is(BlockTags.FENCE_GATES) && !state.getValue(FenceGateBlock.FACING).getAxis().equals(dir.getAxis());
-        return !isExceptionForConnection(state) && sideSolid || fence || gate;
+        boolean wall = state.getBlock() instanceof WallBlock;
+        return !isExceptionForConnection(state) && sideSolid || fence || gate || wall;
     }
 
     @Override

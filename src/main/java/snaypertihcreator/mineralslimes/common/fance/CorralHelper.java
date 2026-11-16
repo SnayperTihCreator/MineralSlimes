@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 
+import net.minecraft.world.level.block.WallBlock;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,8 @@ public final class CorralHelper {
     private CorralHelper() {}
 
     public static boolean isConvertibleFence(BlockState state) {
-        return state.is(BlockTags.FENCES) && !(state.getBlock() instanceof CorralBlock);
+        if (state.getBlock() instanceof CorralBlock) return false;
+        return state.is(BlockTags.FENCES) || state.getBlock() instanceof WallBlock;
     }
 
     public static BlockState makeCorralState(BlockState fenceState) {

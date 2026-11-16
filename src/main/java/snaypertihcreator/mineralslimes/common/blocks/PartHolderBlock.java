@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.client.parts.WrenchArrowRenderer;
 import snaypertihcreator.mineralslimes.common.ModTags;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
+import snaypertihcreator.mineralslimes.common.blockentity.InductorBlockEntity;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.PartRotator;
 import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
@@ -98,6 +99,7 @@ public abstract class PartHolderBlock extends Block implements EntityBlock {
             }
             if (holder.removePartNear(level, angle, PartRotator.GRAB_TOLERANCE) == null)
                 return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            InductorBlockEntity.markColumnFieldDirty(level, pos);
             var sound = state.getSoundType(level, pos, player).getBreakSound();
             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
             return ItemInteractionResult.CONSUME;
@@ -111,6 +113,7 @@ public abstract class PartHolderBlock extends Block implements EntityBlock {
             return ItemInteractionResult.SUCCESS;
         } else if (!PartRotator.wrenchUse(player, holder, angle))
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        InductorBlockEntity.markColumnFieldDirty(level, pos);
         return ItemInteractionResult.CONSUME;
     }
 
@@ -120,6 +123,7 @@ public abstract class PartHolderBlock extends Block implements EntityBlock {
         if (level.isClientSide) return ItemInteractionResult.SUCCESS;
         float angle = FencePart.snap(angleOf(hit), FencePart.STEP);
         if (!holder.addPart(item.getType(), angle)) return ItemInteractionResult.CONSUME;
+        InductorBlockEntity.markColumnFieldDirty(level, pos);
         if (!player.isCreative()) stack.shrink(1);
         var sound = state.getSoundType(level, pos, player).getPlaceSound();
         level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);

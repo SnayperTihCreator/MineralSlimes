@@ -86,12 +86,4 @@ public class ModNetworking {
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         VACUUMING.remove(event.getEntity().getUUID());
     }
-
-    @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        BlockState state = event.getLevel().getBlockState(event.getPos());
-        if (!(state.getBlock() instanceof CorralBlock) && !(state.getBlock() instanceof InductorBlock)) return;
-        if (!event.getItemStack().is(ModTags.Items.WRENCH)) return;
-        event.setUseBlock(TriState.TRUE);
-    }
 }

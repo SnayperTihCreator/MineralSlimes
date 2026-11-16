@@ -2,11 +2,18 @@ package snaypertihcreator.mineralslimes;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
+import snaypertihcreator.mineralslimes.common.ModTags;
+import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
+import snaypertihcreator.mineralslimes.common.blocks.InductorBlock;
+import snaypertihcreator.mineralslimes.common.blocks.PartHolderBlock;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
 import snaypertihcreator.mineralslimes.common.items.VakPakItem;
@@ -42,5 +49,13 @@ public class ModEvents {
                 stack.set(ModDataComponents.VAKPAK_STATE, VakPakItem.VakPakState.NORMAL);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        BlockState state = event.getLevel().getBlockState(event.getPos());
+        if (!(state.getBlock() instanceof PartHolderBlock)) return;
+        if (!event.getItemStack().is(ModTags.Items.WRENCH)) return;
+        event.setUseBlock(TriState.TRUE);
     }
 }

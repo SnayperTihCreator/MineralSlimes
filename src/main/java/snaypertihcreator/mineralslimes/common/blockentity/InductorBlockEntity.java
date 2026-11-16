@@ -1,6 +1,7 @@
 package snaypertihcreator.mineralslimes.common.blockentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -10,7 +11,8 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -21,80 +23,131 @@ import snaypertihcreator.mineralslimes.common.blocks.InductorBlock;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
 import snaypertihcreator.mineralslimes.common.fance.parts.EmitterPart;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class InductorBlockEntity extends CorralBlockEntity {
     public static final int MAX_FIELD_RANGE = 8;
     public static final int MAX_COLUMN_SCAN = 16;
-    public static final float FACE_TOLERANCE = FencePart.STEP*1.5F;
+    public static final float FACE_TOLERANCE = FencePart.STEP * 1.5F;
     public static final double WALL_SURFACE = 0.06F;
     public static final double WALL_DETECT = 0.5F;
+    public static final double WALL_HEIGHT = 0.95;
 
-    public record Link(BlockPos emitter1, BlockPos emitter2, BlockPos inductor2, float angle1, float angle2) {}
     private record EmitterRef(BlockPos pos, float angle) {}
 
-    private final List<Link> links = new ArrayList<>();
+    private final Set<BlockPos> neighbors = new HashSet<>();
+    private boolean fieldDirty = false;
+    private boolean scannedOnce = false;
+
+    public Set<BlockPos> getNeighbors() {
+        return Collections.unmodifiableSet(neighbors);
+    }
 
     public InductorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntity.INDUCTOR_BE.get(), pos, state);
     }
 
-    public List<Link> getLinks() {
-        return Collections.unmodifiableList(links);
-    }
-
     public void serverTick(ServerLevel level) {
         long t = level.getGameTime() + Math.floorMod(getBlockPos().hashCode(), 20L);
-        if (t%5L == 0L)
-            if (links.removeIf(l -> !linkValid(level, l))) syncToClient();
-        if (t%100 == 0L) updateLinks(level);
+        if (!scannedOnce) { scannedOnce = true; fieldDirty = true; }
+        if (fieldDirty) { fieldDirty = false; rebuildLinks(level); }
+        else if (t % 100L == 0L) validateLinks(level);
         applyWallCollision(level);
     }
 
-    private void updateLinks(ServerLevel level) {
-        boolean changed = links.removeIf(l -> !linkValid(level, l));
+    public void markFieldDirty() {
+        fieldDirty = true;
+        setChanged();
+    }
 
-        for (EmitterRef e : collectEmitters(level, getBlockPos())) {
-            if (hasLinkFrom(e.pos())) continue;
-            BlockPos best = null, bestInd = null;
-            float bestFAngle = 0f;
-            double bestD = Double.MAX_VALUE;
-            for (BlockPos ind : inductorsAround(level, e.pos())) {
-                if (ind.equals(getBlockPos())) continue;
-                if (!(level.getBlockEntity(ind) instanceof InductorBlockEntity other)) continue;
-                if (other.columnHeight(level) != columnHeight(level)) continue;   // правило 2
-                for (EmitterRef f : other.collectEmitters(level, ind)) {
-                    if (f.pos().getY() != e.pos().getY()) continue;               // правило 1
-                    if (other.hasLinkFrom(f.pos())) continue;
-                    if (!faceEachOther(e, f)) continue;                           // правило 3
-                    double d = distSqr(e.pos(), f.pos());
-                    if (d > (double) MAX_FIELD_RANGE * MAX_FIELD_RANGE) continue;
-                    if (!pathClear(level, e.pos(), f.pos())) continue;
-                    if (d < bestD) { bestD = d; best = f.pos(); bestFAngle = f.angle(); bestInd = ind; }
-                }
-            }
-            if (best != null) {
-                links.add(new Link(e.pos().immutable(), best.immutable(), bestInd.immutable(), e.angle(), bestFAngle));
-                if (level.getBlockEntity(bestInd) instanceof InductorBlockEntity other) {
-                    other.links.add(new Link(best.immutable(), e.pos().immutable(),
-                            getBlockPos().immutable(), bestFAngle, e.angle()));
-                    other.syncToClient();
-                }
-                changed = true;
-            }
+    public static void markColumnFieldDirty(Level level, BlockPos anyPosOfColumn) {
+        if (level.isClientSide) return;
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos(anyPosOfColumn.getX(), anyPosOfColumn.getY(), anyPosOfColumn.getZ());
+        for (int i = 0; i <= MAX_COLUMN_SCAN; i++) {
+            if (level.getBlockEntity(m) instanceof InductorBlockEntity ind) { ind.markFieldDirty(); return; }
+            if (!(level.getBlockState(m).getBlock() instanceof CorralBlock)) return;
+            m.move(Direction.UP);
+        }
+    }
+
+    private void rebuildLinks(ServerLevel level) {
+        boolean changed = false;
+        List<EmitterRef> mine = collectEmitters(level, getBlockPos());
+
+        for (BlockPos other : List.copyOf(neighbors))
+            if (!canLink(level, other, mine)) { removeEdge(level, other); changed = true; }
+
+        for (BlockPos ind : inductorsAround(level)) {
+            if (ind.equals(getBlockPos()) || neighbors.contains(ind)) continue;
+            if (canLink(level, ind, mine)) { addEdge(level, ind); changed = true; }
         }
         if (changed) syncToClient();
     }
 
-    private boolean hasLinkFrom(BlockPos emitter) {
-        for (Link l : links) if (l.emitter1.equals(emitter)) return true;
-        return false;
+    private void validateLinks(ServerLevel level) {
+        if (neighbors.isEmpty()) return;
+        List<EmitterRef> mine = collectEmitters(level, getBlockPos());
+        boolean changed = false;
+        for (BlockPos other : List.copyOf(neighbors))
+            if (!canLink(level, other, mine)) { removeEdge(level, other); changed = true; }
+        if (changed) syncToClient();
     }
 
-    private boolean isFieldOwner(Link l) {
-        return getBlockPos().compareTo(l.inductor2) < 0;
+    private boolean canLink(ServerLevel level, BlockPos otherInd, List<EmitterRef> mine) {
+        if (!(level.getBlockEntity(otherInd) instanceof InductorBlockEntity other)) return false;
+        if (other.columnHeight(level) != columnHeight(level)) return false;
+
+        List<EmitterRef> theirs = other.collectEmitters(level, otherInd);
+        if (mine.isEmpty() || mine.size() != theirs.size()) return false;
+
+        for (EmitterRef e : mine) {
+            boolean ok = false;
+            for (EmitterRef f : theirs) {
+                if (f.pos().getY() == e.pos().getY()
+                        && faceEachOther(e, f)
+                        && distSqr(e.pos(), f.pos()) <= (double) MAX_FIELD_RANGE * MAX_FIELD_RANGE
+                        && pathClear(level, e.pos(), f.pos())) { ok = true; break; }
+            }
+            if (!ok) return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    private List<BlockPos> inductorsAround(ServerLevel level) {
+        List<BlockPos> out = new ArrayList<>();
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
+        for (int dy = -MAX_COLUMN_SCAN; dy <= MAX_COLUMN_SCAN; dy++) {
+            int y = getBlockPos().getY() + dy;
+            if (y < level.getMinBuildHeight() || y > level.getMaxBuildHeight()) continue;
+            for (int dx = -MAX_FIELD_RANGE; dx <= MAX_FIELD_RANGE; dx++) {
+                for (int dz = -MAX_FIELD_RANGE; dz <= MAX_FIELD_RANGE; dz++) {
+                    if (dx * dx + dz * dz > (double) MAX_FIELD_RANGE * MAX_FIELD_RANGE) continue;
+                    m.set(getBlockPos().getX() + dx, y, getBlockPos().getZ() + dz);
+                    if (!level.hasChunkAt(m)) continue;
+                    if (level.getBlockState(m).getBlock() instanceof InductorBlock) out.add(m.immutable());
+                }
+            }
+        }
+        return out;
+    }
+
+    private void addEdge(ServerLevel level, BlockPos other) {
+        neighbors.add(other.immutable());
+        if (level.getBlockEntity(other) instanceof InductorBlockEntity o) {
+            o.neighbors.add(getBlockPos().immutable());
+            o.syncToClient();
+        }
+        setChanged();
+    }
+
+    private void removeEdge(ServerLevel level, BlockPos other) {
+        neighbors.remove(other);
+        if (level.getBlockEntity(other) instanceof InductorBlockEntity o) {
+            o.neighbors.remove(getBlockPos());
+            o.syncToClient();
+        }
+        setChanged();
     }
 
     private static Vec3 facing(float angleDeg) {
@@ -102,12 +155,12 @@ public class InductorBlockEntity extends CorralBlockEntity {
         return new Vec3(Math.sin(rad), 0, -Math.cos(rad));
     }
 
-    private static Vec3 anchor(BlockPos pos, float angleDeg) {
+    public static Vec3 anchor(BlockPos pos, float angleDeg) {
         Vec3 dir = facing(angleDeg);
         return new Vec3(
-            pos.getX() + 0.5 + dir.x * EmitterPart.ATTACHED_RADIUS,
-            pos.getY() + 0.5,
-            pos.getZ() + 0.5 + dir.z * EmitterPart.ATTACHED_RADIUS
+                pos.getX() + 0.5 + dir.x * EmitterPart.ATTACHED_RADIUS,
+                pos.getY() + 0.5,
+                pos.getZ() + 0.5 + dir.z * EmitterPart.ATTACHED_RADIUS
         );
     }
 
@@ -123,17 +176,6 @@ public class InductorBlockEntity extends CorralBlockEntity {
         Vec3 dirB = facing(b.angle());
         if (dirA.x * toB.x + dirA.z * toB.z < cosTol) return false;
         return dirB.x * -toB.x + dirB.z * -toB.z >= cosTol;
-    }
-
-    private int columnHeight(ServerLevel level) {
-        int h = 0;
-        BlockPos cursor = getBlockPos().below();
-        for (int i = 0; i < MAX_COLUMN_SCAN && cursor.getY() >= level.getMinBuildHeight(); i++) {
-            if (!(level.getBlockState(cursor).getBlock() instanceof CorralBlock)) break;
-            h++;
-            cursor = cursor.below();
-        }
-        return h;
     }
 
     private List<EmitterRef> collectEmitters(ServerLevel level, BlockPos indPos) {
@@ -155,43 +197,19 @@ public class InductorBlockEntity extends CorralBlockEntity {
         return out;
     }
 
-    private static EmitterRef emitterRefAt(ServerLevel level, BlockPos pos) {
-        if (!(level.getBlockState(pos).getBlock() instanceof CorralBlock)) return null;
-        if (!(level.getBlockEntity(pos) instanceof CorralBlockEntity corral)) return null;
-        for (FencePart part : corral.getParts())
-            if (part instanceof EmitterPart ep) return new EmitterRef(pos, ep.getAngle());
-        return null;
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean linkValid(ServerLevel level, Link l) {
-        if (!(level.getBlockEntity(l.inductor2) instanceof InductorBlockEntity other)) return false;
-        if (other.columnHeight(level) != columnHeight(level)) return false;
-        EmitterRef ea = emitterRefAt(level, l.emitter1);
-        EmitterRef eb = emitterRefAt(level, l.emitter2);
-        if (ea == null || eb == null) return false;
-        if (!faceEachOther(ea, eb)) return false;
-        return l.emitter1.getY() == l.emitter2.getY()
-                && distSqr(l.emitter1, l.emitter2) <= (double) MAX_FIELD_RANGE * MAX_FIELD_RANGE
-                && pathClear(level, l.emitter1, l.emitter2);
-    }
-
-    private List<BlockPos> inductorsAround(ServerLevel level, BlockPos e) {
-        List<BlockPos> out = new ArrayList<>();
-        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
-        for (int dy = 1; dy <= MAX_COLUMN_SCAN; dy++) {
-            int y = e.getY() + dy;
-            if (y > level.getMaxBuildHeight()) break;
-            for (int dx = -MAX_FIELD_RANGE; dx <= MAX_FIELD_RANGE; dx++) {
-                for (int dz = -MAX_FIELD_RANGE; dz <= MAX_FIELD_RANGE; dz++) {
-                    if (dx * dx + dz * dz > MAX_FIELD_RANGE * MAX_FIELD_RANGE) continue;
-                    m.set(e.getX() + dx, y, e.getZ() + dz);
-                    if (!level.hasChunkAt(m)) continue;
-                    if (level.getBlockState(m).getBlock() instanceof InductorBlock) out.add(m.immutable());
-                }
-            }
+    public static int columnHeight(Level level, BlockPos top) {
+        int h = 0;
+        BlockPos cursor = top.below();
+        for (int i = 0; i < MAX_COLUMN_SCAN && cursor.getY() >= level.getMinBuildHeight(); i++) {
+            if (!(level.getBlockState(cursor).getBlock() instanceof CorralBlock)) break;
+            h++;
+            cursor = cursor.below();
         }
-        return out;
+        return h;
+    }
+
+    private int columnHeight(ServerLevel level) {
+        return columnHeight(level, getBlockPos());
     }
 
     private static boolean pathClear(ServerLevel level, BlockPos from, BlockPos to) {
@@ -206,7 +224,7 @@ public class InductorBlockEntity extends CorralBlockEntity {
             BlockPos pos = BlockPos.containing(p.x, p.y, p.z);
             BlockState state = level.getBlockState(pos);
             Block block = state.getBlock();
-            if (block instanceof CorralBlock || block instanceof InductorBlock) continue; // столбы пропускаем
+            if (block instanceof CorralBlock || block instanceof InductorBlock) continue;
             if (!state.isAir() && !state.getCollisionShape(level, pos).isEmpty()) return false;
         }
         return true;
@@ -215,38 +233,41 @@ public class InductorBlockEntity extends CorralBlockEntity {
     private static double distSqr(BlockPos a, BlockPos b) {
         double dx = a.getX() - b.getX(), dz = a.getZ() - b.getZ();
         return dx * dx + dz * dz;
+//        a.distSqr(b);
     }
 
     private void applyWallCollision(ServerLevel level) {
-        if (links.isEmpty()) return;
-        for (Link l : links) {
-            if (!isFieldOwner(l)) continue;
-            for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, detectBox(l))) {
-                if (e instanceof Animal) collideWithPlane(e, l);
-            }
+        if (neighbors.isEmpty()) return;
+        for (BlockPos other : neighbors) {
+            if (getBlockPos().compareTo(other) >= 0) continue;
+            for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, detectBox(other, level)))
+                if (e instanceof PathfinderMob) collideWithPlane(e, other, level);
         }
     }
 
-    private AABB detectBox(Link l) {
-        Vec3 a = anchor(l.emitter1, l.angle1);
-        Vec3 b = anchor(l.emitter2, l.angle2);
-        double minX = Math.min(a.x, b.x) - 0.6, maxX = Math.max(a.x, b.x) + 0.6;
-        double minZ = Math.min(a.z, b.z) - 0.6, maxZ = Math.max(a.z, b.z) + 0.6;
-        return new AABB(minX, l.emitter1.getY() - 0.5, minZ, maxX, getBlockPos().getY() + 0.5, maxZ);
+    private AABB detectBox(BlockPos otherInd, ServerLevel level) {
+        double h = columnHeight(level, getBlockPos());
+        double y0 = getBlockPos().getY() - h;
+        double y1 = y0 + (h + 1) * WALL_HEIGHT;
+        Vec3 a = Vec3.atCenterOf(getBlockPos());
+        Vec3 b = Vec3.atCenterOf(otherInd);
+        return new AABB(Math.min(a.x, b.x) - 0.6, y0 - 0.5, Math.min(a.z, b.z) - 0.6, Math.max(a.x, b.x) + 0.6, y1, Math.max(a.z, b.z) + 0.6);
     }
 
-    private void collideWithPlane(LivingEntity e, Link l) {
-        Vec3 a = anchor(l.emitter1, l.angle1);
-        Vec3 b = anchor(l.emitter2, l.angle2);
+    private void collideWithPlane(LivingEntity e, BlockPos otherInd, ServerLevel level) {
+        Vec3 a = Vec3.atCenterOf(getBlockPos());
+        Vec3 b = Vec3.atCenterOf(otherInd);
         Vec3 seg = new Vec3(b.x - a.x, 0, b.z - a.z);
         double len = seg.length();
-        if (len < 0.5) return;
+        if (len < 1.0) return;
         Vec3 dir = seg.scale(1.0 / len);
         Vec3 nrm = new Vec3(-dir.z, 0, dir.x);
 
+        double h = columnHeight(level, getBlockPos());
+        double y0 = getBlockPos().getY() - h;
+        double y1 = y0 + (h + 1) * WALL_HEIGHT;
+
         AABB bb = e.getBoundingBox();
-        double y0 = l.emitter1.getY();
-        double y1 = getBlockPos().getY();
         if (bb.maxY <= y0 || bb.minY >= y1) return;
 
         double halfW = e.getBbWidth() * 0.5;
@@ -282,26 +303,19 @@ public class InductorBlockEntity extends CorralBlockEntity {
 
     public void saveFieldData(CompoundTag tag) {
         ListTag list = new ListTag();
-        for (Link l : links) {
+        for (BlockPos p : neighbors) {
             CompoundTag c = new CompoundTag();
-            c.putLong("E", l.emitter1.asLong());
-            c.putLong("O", l.emitter2.asLong());
-            c.putLong("I", l.inductor2.asLong());
-            c.putFloat("EA", l.angle1);
-            c.putFloat("EB", l.angle2);
+            c.putLong("I", p.asLong());
             list.add(c);
         }
-        tag.put("FieldLinks", list);
+        tag.put("FieldNeighbors", list);
     }
 
     public void loadFieldData(CompoundTag tag) {
-        links.clear();
-        ListTag list = tag.getList("FieldLinks", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag c = list.getCompound(i);
-            links.add(new Link(BlockPos.of(c.getLong("E")), BlockPos.of(c.getLong("O")),
-                    BlockPos.of(c.getLong("I")), c.getFloat("EA"), c.getFloat("EB")));
-        }
+        neighbors.clear();
+        ListTag list = tag.getList("FieldNeighbors", Tag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++)
+            neighbors.add(BlockPos.of(list.getCompound(i).getLong("I")));
     }
 
     @Override
@@ -327,6 +341,4 @@ public class InductorBlockEntity extends CorralBlockEntity {
         super.loadAdditional(tag, registries);
         loadFieldData(tag);
     }
-
-
 }

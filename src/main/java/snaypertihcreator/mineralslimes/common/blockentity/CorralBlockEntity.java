@@ -20,6 +20,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
@@ -61,13 +64,28 @@ public class CorralBlockEntity extends BlockEntity implements IVakPakVacuumReact
 
         BlockState state = storedFence.defaultBlockState();
         BlockState self = getBlockState();
-        for (var entry: CorralBlock.CONNECTIONS.entrySet())
-            if (state.hasProperty(entry.getValue()))
-                state = state.setValue(entry.getValue(), self.getValue(entry.getValue()));
+
+        for (var entry : CorralBlock.CONNECTIONS.entrySet()) {
+            BooleanProperty corralProp = entry.getValue();
+
+            if (state.hasProperty(corralProp)) {
+                state = state.setValue(corralProp, self.getValue(corralProp));
+                continue;
+            }
+            Property<?> side = state.getBlock().getStateDefinition().getProperty(corralProp.getName());
+            if (side != null && side.getPossibleValues().contains(WallSide.LOW)) {
+                state = setSide(state, side, self.getValue(corralProp));
+            }
+        }
 
         if (state.hasProperty(BlockStateProperties.WATERLOGGED))
             state = state.setValue(BlockStateProperties.WATERLOGGED, self.getValue(BlockStateProperties.WATERLOGGED));
         return state;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> BlockState setSide(BlockState state, Property<T> prop, boolean connected) {
+        return state.setValue(prop, (T) (connected ? WallSide.LOW : WallSide.NONE));
     }
 
     public List<FencePart> getParts() { return Collections.unmodifiableList(parts); }

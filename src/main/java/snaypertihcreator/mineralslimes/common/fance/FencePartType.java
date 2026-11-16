@@ -1,8 +1,10 @@
 package snaypertihcreator.mineralslimes.common.fance;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.common.blockentity.CorralBlockEntity;
 import snaypertihcreator.mineralslimes.common.items.CorralPartItem;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
@@ -34,6 +36,10 @@ public class FencePartType<T extends FencePart> {
     public String getName() {
         ResourceLocation id = getId();
         return id == null ? "unregistered" : id.getPath();
+    }
+
+    public Component getDisplayName(){
+        return Component.translatable("%s.corralpart.%s".formatted(MineralSlimes.MODID, getName()));
     }
 
     public List<String> getVariants() {

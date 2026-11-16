@@ -48,7 +48,8 @@ public class CorralPartItem <T extends FencePart> extends Item {
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         MutableComponent tool = Component.empty();
         tool.append(TOOLTIP);
-        tool.append(" %s".formatted(type.get().getName()));
+        tool.append(" ");
+        tool.append(type.get().getDisplayName());
         tooltip.add(tool.withStyle(ChatFormatting.GRAY));
     }
 
