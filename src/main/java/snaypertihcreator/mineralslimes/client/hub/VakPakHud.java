@@ -36,18 +36,13 @@ import static snaypertihcreator.mineralslimes.MineralSlimes.modLoc;
 public class VakPakHud {
     private static final Set<ResourceLocation> HIDDEN_LAYERS = Set.of(
             VanillaGuiLayers.HOTBAR,
-            VanillaGuiLayers.EXPERIENCE_BAR,
-            VanillaGuiLayers.EXPERIENCE_LEVEL,
-            VanillaGuiLayers.PLAYER_HEALTH,
-            VanillaGuiLayers.ARMOR_LEVEL,
-            VanillaGuiLayers.FOOD_LEVEL,
-            VanillaGuiLayers.AIR_LEVEL,
-            VanillaGuiLayers.VEHICLE_HEALTH,
-            VanillaGuiLayers.JUMP_METER,
             VanillaGuiLayers.SELECTED_ITEM_NAME
     );
-    private static final int SLOT_SIZE = 22;
+    public static final int SLOT_SIZE = 22;
     private static final int SLOT_GAP = 2;
+    public static final int BORDER = 3;
+    public static final int CONTENT_SIZE = SLOT_SIZE - BORDER * 2;
+
     public static final int TEXTURE_SIZE = 256;
     private static final int SHOW_TIME_TITLE = 1500;
     public static final ResourceLocation ID = modLoc("vakpak_hud");
@@ -111,7 +106,7 @@ public class VakPakHud {
 
         int totalWidth = count * SLOT_SIZE + (count - 1) * SLOT_GAP;
         int x = gfx.guiWidth() / 2 - totalWidth / 2;
-        int y = gfx.guiHeight() - 21;
+        int y = gfx.guiHeight() - SLOT_SIZE;
         int stride = SLOT_SIZE + SLOT_GAP;
 
         if (sel != lastSelected) {
@@ -120,22 +115,21 @@ public class VakPakHud {
         }
 
         if (Util.getMillis() < nameShowUntil) {
-            gfx.drawCenteredString(mc.font, inv.getSlot(sel).displayName(), gfx.guiWidth() / 2, y - 12, 0xFFFFFF);
+            gfx.drawCenteredString(mc.font, inv.getSlot(sel).displayName(), gfx.guiWidth() / 2, y - 37, 0xFFFFFF);
         }
 
         if (VAKPAK_SCROLL_KEY.isDown()) {
             int sx = x + count * stride;
-            gfx.blit(TEXTURE, sx, y, 0, 0, 20, 20, TEXTURE_SIZE, TEXTURE_SIZE);
+            gfx.blit(TEXTURE, sx, y + (SLOT_SIZE - 20) / 2, 0, 0, 20, 20, TEXTURE_SIZE, TEXTURE_SIZE);
         }
 
         for (int i = 0; i < count; i++) {
             int sx = x + i * stride;
 
             gfx.blit(TEXTURE, sx, y, 0, 20, SLOT_SIZE, SLOT_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
-            UntilSlotRenderers.render(inv.getSlot(i), gfx, mc, sx + 3, y + 3, SLOT_SIZE - 2);
-
+            UntilSlotRenderers.render(inv.getSlot(i), gfx, mc, sx + BORDER, y + BORDER, CONTENT_SIZE);
             if (i == sel)
-                gfx.blit(TEXTURE, sx, y, 0, 42, SLOT_SIZE, SLOT_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
+                gfx.blit(TEXTURE, sx, y, 22, 20, SLOT_SIZE, SLOT_SIZE, TEXTURE_SIZE, TEXTURE_SIZE);
         }
     }
 }

@@ -3,6 +3,7 @@ package snaypertihcreator.mineralslimes.common.vakpak.upgrade;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Contract;
@@ -36,6 +37,8 @@ public final class VakPakUpgrade {
     @Contract(" -> new")
     public @NotNull VakPakUpgrade inc() { return new VakPakUpgrade(type, level + 1); }
     public boolean isMaxed() { return level >= type.maxLevel(); }
+    @Contract(" -> new")
+    public @NotNull Component display() { return type.levelName(level); }
 
     public VakPakUpgradeType getType() { return type; }
     public int getLevel() { return level; }

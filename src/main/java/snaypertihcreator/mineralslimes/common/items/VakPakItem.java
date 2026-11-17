@@ -3,6 +3,7 @@ package snaypertihcreator.mineralslimes.common.items;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -21,6 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import snaypertihcreator.mineralslimes.LangKeys;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakInventory;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlot;
@@ -223,6 +226,16 @@ public final class VakPakItem extends Item implements GeoItem {
         entity.setDeltaMovement(entity.getDeltaMovement().scale(1.0 - blend).add(desired.scale(blend)));
         entity.resetFallDistance();
         entity.hasImpulse = true;
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        if (flag.hasShiftDown()) {
+            VakPakUpgrades upgrades = stack.getOrDefault(ModDataComponents.VAKPAK_UPGRADES, VakPakUpgrades.EMPTY);
+            for (var upgrade: upgrades.entries().values()) tooltip.add(upgrade.display());
+        }
+        else tooltip.add(Component.translatable(LangKeys.ShiftInfo));
+        super.appendHoverText(stack, context, tooltip, flag);
     }
 
     @Override

@@ -4,6 +4,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.neoforge.common.data.LanguageProvider;
+import snaypertihcreator.mineralslimes.LangKeys;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
@@ -25,6 +26,8 @@ public class ModEnLangProvider extends LanguageProvider {
     protected void addTranslations() {
         add(ModItems.PINK_PLORT.get(), "Pink Plort");
         add(ModItems.ROCKY_PLORT.get(), "Rocky Plort");
+        add(ModItems.TUBBY_PLORT.get(), "Tubby Plort");
+        add(ModItems.QUANTUM_PLORT.get(), "Quantum Plort");
 
         add(ModItems.ODD_ONION.get(), "Odd Onion");
         add(ModItems.CUBERRY.get(), "Cuberry");
@@ -49,6 +52,7 @@ public class ModEnLangProvider extends LanguageProvider {
         add(VakPakSlotEmpty.DISPLAY_NAME, "Empty");
         add(VakPakSlotEntity.UNKNOWN_ENTITY, "Unnamed Entity");
         add(VakPakSlotWater.DISPLAY_NAME, "Water (%s/%s)");
+        add(LangKeys.ShiftInfo, "Press Shift for detailed info");
 
         for (var holder: ModUpgradeTypes.all()){
             addUpgrade(holder.displayName(), holder.levelName(0), switch (holder.id().getPath()){
@@ -64,6 +68,7 @@ public class ModEnLangProvider extends LanguageProvider {
 
         add(ModSlimes.PINK.slimeType().displayName(), "Pink Slime");
         add(ModSlimes.ROCKY.slimeType().displayName(), "Rocky Slime");
+        add(ModSlimes.TUBBY.slimeType().displayName(), "Tubby Slime");
 
         add(ModCreativeTabs.PLORT_TAB.get().getDisplayName(), "Plorts");
         add(ModCreativeTabs.SLIMES_TAB.get().getDisplayName(), "Slimes");

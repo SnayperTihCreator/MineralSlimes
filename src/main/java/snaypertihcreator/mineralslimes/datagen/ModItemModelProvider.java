@@ -16,23 +16,24 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
 
     @Override
     protected void registerModels() {
-        basicItem(ModItems.PINK_PLORT.get());
-        basicItem(ModItems.ROCKY_PLORT.get());
-        basicItem(ModItems.TUBBY_PLORT.get());
-        basicItem(ModItems.QUANTUM_PLORT.get());
-        basicItem(ModItems.TOOL.get());
+        basicSubFolderItem(ModItems.PINK_PLORT, "plorts");
+        basicSubFolderItem(ModItems.ROCKY_PLORT, "plorts");
+        basicSubFolderItem(ModItems.TUBBY_PLORT, "plorts");
+        basicSubFolderItem(ModItems.QUANTUM_PLORT, "plorts");
 
-        foodItem(ModItems.ODD_ONION);
-        foodItem(ModItems.CUBERRY);
-        foodItem(ModItems.MINT_MANGO);
-        foodItem(ModItems.PRICKLE_PEAR);
-        foodItem(ModItems.OCA_OCA);
-        foodItem(ModItems.PHASE_LEMON); // TODO Возможные изменения текстуры
-        foodItem(ModItems.POLARICHERRY);
+        basicSubFolderItem(ModItems.ODD_ONION, "food");
+        basicSubFolderItem(ModItems.CUBERRY, "food");
+        basicSubFolderItem(ModItems.MINT_MANGO, "food");
+        basicSubFolderItem(ModItems.PRICKLE_PEAR, "food");
+        basicSubFolderItem(ModItems.OCA_OCA, "food");
+        basicSubFolderItem(ModItems.PHASE_LEMON, "food"); // TODO Возможные изменения текстуры
+        basicSubFolderItem(ModItems.POLARICHERRY, "food");
 
         slimeIcon(ModSlimes.PINK);
         stubSlimeIcon(ModSlimes.ROCKY);
         stubSlimeIcon(ModSlimes.TUBBY);
+
+        basicItem(ModItems.TOOL.get());
 
         simpleBlockItem(ModBlocks.CORRAL.get());
         simpleBlockItem(ModBlocks.INDUCTOR.get(), 0.75F);

@@ -13,8 +13,8 @@ public final class UntilSlotRenderers {
 
     private static final Map<VakPakSlotType, VakPakSlotRenderers.VakPakSlotRenderer> RENDERERS = new ConcurrentHashMap<>();
 
-    private static final VakPakSlotRenderers.VakPakSlotRenderer FALLBACK = (slot, gfx, mc, x, y, size) ->
-            gfx.drawString(mc.font, "?", x + 8, y + 6, 0xFF5555, false);
+    static final VakPakSlotRenderers.VakPakSlotRenderer FALLBACK = (slot, gfx, mc, x, y, size) ->
+            gfx.drawString(mc.font, "?", x + (size - mc.font.width("?")) / 2, y + (size - mc.font.lineHeight) / 2, 0xFF5555, false);
 
     static {
         register(VakPakSlotType.ITEM, new VakPakSlotRenderers.Item());

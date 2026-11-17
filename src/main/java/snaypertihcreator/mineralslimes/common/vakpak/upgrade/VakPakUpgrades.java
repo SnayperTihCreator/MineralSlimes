@@ -18,7 +18,7 @@ public final class VakPakUpgrades {
     public static final Codec<VakPakUpgrades> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             Codec.unboundedMap(VakPakUpgradeType.CODEC, VakPakUpgrade.CODEC)
                     .fieldOf("upgrades")
-                    .forGetter(VakPakUpgrades::upgradesMap)
+                    .forGetter(VakPakUpgrades::entries)
     ).apply(inst, VakPakUpgrades::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, VakPakUpgrades> STREAM_CODEC = new StreamCodec<>() {
@@ -35,7 +35,7 @@ public final class VakPakUpgrades {
 
         @Override
         public void encode(RegistryFriendlyByteBuf buf, VakPakUpgrades upgrades) {
-            Map<VakPakUpgradeType, VakPakUpgrade> map = upgrades.upgradesMap();
+            Map<VakPakUpgradeType, VakPakUpgrade> map = upgrades.entries();
             buf.writeVarInt(map.size());
             for (VakPakUpgrade upgrade : map.values()) {
                 VakPakUpgrade.STREAM_CODEC.encode(buf, upgrade);
@@ -49,7 +49,7 @@ public final class VakPakUpgrades {
         this.upgrades = new HashMap<>(upgrades);
     }
 
-    public Map<VakPakUpgradeType, VakPakUpgrade> upgradesMap() {
+    public Map<VakPakUpgradeType, VakPakUpgrade> entries() {
         return Collections.unmodifiableMap(upgrades);
     }
 

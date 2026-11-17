@@ -4,6 +4,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.neoforge.common.data.LanguageProvider;
+import snaypertihcreator.mineralslimes.LangKeys;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.hub.VakPakHud;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
@@ -14,6 +15,7 @@ import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEmpty;
 import snaypertihcreator.mineralslimes.common.vakpak.inventory.VakPakSlotEntity;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
+import snaypertihcreator.mineralslimes.common.vakpak.upgrade.ModUpgradeTypes;
 
 public class ModRuLangProvider extends LanguageProvider {
     public ModRuLangProvider(PackOutput output) {
@@ -25,6 +27,7 @@ public class ModRuLangProvider extends LanguageProvider {
         add(ModItems.PINK_PLORT.get(), "Розовый плорт");
         add(ModItems.ROCKY_PLORT.get(), "Скалистый плорт");
         add(ModItems.TUBBY_PLORT.get(), "Мяуровый плорт");
+        add(ModItems.QUANTUM_PLORT.get(), "Квантовый");
 
         add(ModItems.ODD_ONION.get(), "Чудной лук");
         add(ModItems.CUBERRY.get(), "Кубника");
@@ -49,6 +52,19 @@ public class ModRuLangProvider extends LanguageProvider {
         add(VakPakSlotEmpty.DISPLAY_NAME, "Пусто");
         add(VakPakSlotEntity.UNKNOWN_ENTITY, "Безымяное существо");
         add(VakPakSlotWater.DISPLAY_NAME, "Вода (%s/%s)");
+        add(LangKeys.ShiftInfo, "Нажмите Shift для подробной информации");
+
+        for (var holder: ModUpgradeTypes.all()){
+            addUpgrade(holder.displayName(), holder.levelName(0), switch (holder.id().getPath()){
+                case "slot_stack"   -> "Стак слотов";
+                case "slot_count"   -> "Количество слотов";
+                case "liquid_slot"  -> "Слот для жидкости";
+                case "world_harvest" -> "Сбор в мире";
+                case "pulse_wave"   -> "Импульсная волна";
+                case "loot_mul"     -> "Множитель добычи";
+                default -> "Неизвестно";
+            });
+        }
 
         add(ModSlimes.PINK.slimeType().displayName(), "Розовый слайм");
         add(ModSlimes.ROCKY.slimeType().displayName(), "Скалистый слайм");

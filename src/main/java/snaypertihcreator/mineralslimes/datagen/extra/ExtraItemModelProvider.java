@@ -23,6 +23,7 @@ public abstract class ExtraItemModelProvider extends ItemModelProvider {
         super(output, modid, helper);
     }
 
+    @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
     protected ItemModelBuilder simpleBlockItem(Block block, float scale) {
         return simpleBlockItem(BuiltInRegistries.BLOCK.getKey(block), scale);
     }
@@ -49,14 +50,13 @@ public abstract class ExtraItemModelProvider extends ItemModelProvider {
                 .end();
     }
 
-    protected void foodItem(@NotNull DeferredItem<?> holder) {
+    protected void basicSubFolderItem(@NotNull DeferredItem<?> holder, String folder){
         ResourceLocation id = holder.getId();
         getBuilder(id.toString())
                 .parent(new ModelFile.UncheckedModelFile("item/generated"))
-                .texture("layer0", ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "item/food/" + id.getPath()));
+                .texture("layer0", ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "item/%s/%s".formatted(folder, id.getPath())));
     }
 
-    @SuppressWarnings("SameParameterValue")
     protected <T extends FencePart> void simplePartItem(@NotNull FencePartType<T> type, @NotNull DeferredItem<?> part) {
         getBuilder(part.getId().toString()).parent(new ModelFile.UncheckedModelFile(type.modelId()));
     }
@@ -83,6 +83,7 @@ public abstract class ExtraItemModelProvider extends ItemModelProvider {
     }
 
 
+    @SuppressWarnings("unused")
     protected void geckolibItem(@NotNull DeferredItem<?> item){
         getBuilder(item.getId().getPath()).parent(new ModelFile.UncheckedModelFile("builtin/entity"));
     }
