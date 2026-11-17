@@ -61,16 +61,16 @@ public final class VakPakUpgrades {
     public boolean has(VakPakUpgradeLike type) { return level(type) > 0; }
     public boolean isMaxed(VakPakUpgradeType type) { return level(type) >= type.maxLevel(); }
 
-    public VakPakUpgrades withLevel(VakPakUpgradeType type, int newLevel) {
-        VakPakUpgrade up = upgrades.get(type);
-        VakPakUpgrade next = up == null ? new VakPakUpgrade(type, newLevel) : up.withLevel(newLevel);
+    public VakPakUpgrades withLevel(VakPakUpgradeLike type, int newLevel) {
+        VakPakUpgrade up = upgrades.get(type.getType());
+        VakPakUpgrade next = up == null ? new VakPakUpgrade(type.getType(), newLevel) : up.withLevel(newLevel);
         Map<VakPakUpgradeType, VakPakUpgrade> copy = new HashMap<>(upgrades);
-        copy.put(type, next);
+        copy.put(type.getType(), next);
         return new VakPakUpgrades(copy);
     }
 
     public VakPakUpgrades addLevel(VakPakUpgradeLike type) {
-        return withLevel(type.getType(), level(type) + 1);
+        return withLevel(type, level(type) + 1);
     }
 
     public VakPakUpgrades reset(VakPakUpgradeType type) {

@@ -15,24 +15,32 @@ import snaypertihcreator.mineralslimes.common.vakpak.upgrade.VakPakUpgradeType;
 public final class ModRegistries {
     private ModRegistries() {}
 
-    public static final ResourceKey<Registry<SlimeType>> SLIME_TYPE =
-            ResourceKey.createRegistryKey(MineralSlimes.modLoc("slime_type"));
-    public static final ResourceKey<Registry<FencePartType<?>>> FENCE_PART_TYPE =
-            ResourceKey.createRegistryKey(MineralSlimes.modLoc("fence_part_type"));
-    public static final ResourceKey<Registry<VakPakUpgradeType>> VAKPAK_UPGRADE_TYPE =
-            ResourceKey.createRegistryKey(MineralSlimes.modLoc("vakpak_upgrade_type"));
+    public static final class Keys {
+        private Keys() {}
 
-    public static final Registry<SlimeType> SLIME_TYPES_REGISTRY =
-            new RegistryBuilder<>(SLIME_TYPE).sync(true).create();
-    public static final Registry<FencePartType<?>> FENCE_PART_TYPES_REGISTRY =
-            new RegistryBuilder<>(FENCE_PART_TYPE).sync(true).create();
-    public static final Registry<VakPakUpgradeType> VAKPAK_UPGRADE_TYPES_REGISTRY =
-            new RegistryBuilder<>(VAKPAK_UPGRADE_TYPE).sync(true).create();
+        public static final ResourceKey<Registry<SlimeType>> SLIME_TYPE =
+                ResourceKey.createRegistryKey(MineralSlimes.modLoc("slime_type"));
+        public static final ResourceKey<Registry<FencePartType<?>>> FENCE_PART_TYPE =
+                ResourceKey.createRegistryKey(MineralSlimes.modLoc("fence_part_type"));
+        public static final ResourceKey<Registry<VakPakUpgradeType>> VAKPAK_UPGRADE_TYPE =
+                ResourceKey.createRegistryKey(MineralSlimes.modLoc("vakpak_upgrade_type"));
+    }
+
+    public static final class Registries {
+        private Registries() {}
+
+        public static final Registry<SlimeType> SLIME_TYPES =
+                new RegistryBuilder<>(Keys.SLIME_TYPE).sync(true).create();
+        public static final Registry<FencePartType<?>> FENCE_PART_TYPES =
+                new RegistryBuilder<>(Keys.FENCE_PART_TYPE).sync(true).create();
+        public static final Registry<VakPakUpgradeType> VAKPAK_UPGRADE_TYPES =
+                new RegistryBuilder<>(Keys.VAKPAK_UPGRADE_TYPE).sync(true).create();
+    }
 
     @SubscribeEvent
     public static void onNewRegistry(NewRegistryEvent event) {
-        event.register(SLIME_TYPES_REGISTRY);
-        event.register(FENCE_PART_TYPES_REGISTRY);
-        event.register(VAKPAK_UPGRADE_TYPES_REGISTRY);
+        event.register(Registries.SLIME_TYPES);
+        event.register(Registries.FENCE_PART_TYPES);
+        event.register(Registries.VAKPAK_UPGRADE_TYPES);
     }
 }

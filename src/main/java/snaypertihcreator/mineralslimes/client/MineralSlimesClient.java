@@ -51,7 +51,8 @@ public class MineralSlimesClient {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         for (var slime: ModSlimes.all())
-            event.registerEntityRenderer(slime.entityType(), context -> new SlimeRenderer<>(context, slime.slimeType()));
+            if (slime.defaultRender()) event.registerEntityRenderer(slime.entityType(),
+                        context -> new SlimeRenderer<>(context, slime.slimeType()));
 
         event.registerBlockEntityRenderer(ModBlockEntity.CORRAL_BE.get(), CorralRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntity.INDUCTOR_BE.get(), InductorRenderer::new);

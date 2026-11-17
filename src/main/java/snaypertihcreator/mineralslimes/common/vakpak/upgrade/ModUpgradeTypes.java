@@ -31,7 +31,7 @@ public final class ModUpgradeTypes {
 
     public static class Register extends DeferredRegister<VakPakUpgradeType> {
         public Register(String namespace) {
-            super(ModRegistries.VAKPAK_UPGRADE_TYPE, namespace);
+            super(ModRegistries.Keys.VAKPAK_UPGRADE_TYPE, namespace);
         }
 
         @SuppressWarnings("unchecked")

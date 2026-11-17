@@ -29,7 +29,7 @@ public final class ModPartTypes {
 
     public static class Register extends DeferredRegister<FencePartType<?>>{
         public Register(String namespace) {
-            super(ModRegistries.FENCE_PART_TYPE, namespace);
+            super(ModRegistries.Keys.FENCE_PART_TYPE, namespace);
         }
 
         @SuppressWarnings("unchecked")

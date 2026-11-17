@@ -78,7 +78,7 @@ public abstract class FencePart {
     @Nullable
     public static FencePart load(CorralBlockEntity host, HolderLookup.Provider registries, CompoundTag tag){
         ResourceLocation id = ResourceLocation.tryParse(tag.getString("type"));
-        FencePartType<?> type = id == null ? null : ModRegistries.FENCE_PART_TYPES_REGISTRY.get(id);
+        FencePartType<?> type = id == null ? null : ModRegistries.Registries.FENCE_PART_TYPES.get(id);
         if (type == null) {
             MineralSlimes.LOGGER.warn("Skipping fence part with unknown type '{}'", tag.getString("type"));
             return null;

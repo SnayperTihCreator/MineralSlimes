@@ -28,20 +28,21 @@ import static snaypertihcreator.mineralslimes.common.entity.ModEntities.ENTITY_T
 
 public class ModSlimes {
     public static final DeferredRegister<SlimeType> SLIME_TYPE =
-            DeferredRegister.create(ModRegistries.SLIME_TYPE, MineralSlimes.MODID);
+            DeferredRegister.create(ModRegistries.Keys.SLIME_TYPE, MineralSlimes.MODID);
     private static final List<Entry<?>> SLIMES = new ArrayList<>();
 
     public record Entry<T extends AbstractSlimeEntity>(
             DeferredHolder<SlimeType, SlimeType> type,
             DeferredHolder<EntityType<?>, EntityType<T>> entity,
-            DeferredItem<Item> icon
+            DeferredItem<Item> icon,
+            boolean defaultRender
     ) {
         public @NotNull SlimeType slimeType() { return type.value(); }
         public @NotNull EntityType<T> entityType() { return entity.value(); }
         public @NotNull Item iconEntity() { return icon.value(); }
     }
 
-    public static <T extends AbstractSlimeEntity> @NotNull Entry<T> register(String name, int priority, int tint, EntityType.EntityFactory<T> factory, Consumer<SlimeType.Builder> config) {
+    public static <T extends AbstractSlimeEntity> @NotNull Entry<T> register(String name, int priority, int tint, EntityType.EntityFactory<T> factory, Consumer<SlimeType.Builder> config, boolean defaultRender) {
         SlimeType type = buildType(name, priority, tint, config);
         DeferredHolder<SlimeType, SlimeType> typeHolder = SLIME_TYPE.register(name, () -> type);
         DeferredItem<Item> icon = ModItems.ITEMS.registerSimpleItem("%s_slime_icon".formatted(name));
@@ -52,9 +53,13 @@ public class ModSlimes {
                         .sized(type.width(), type.height())
                         .clientTrackingRange(10)
                         .build(name + "_slime"));
-        var entry = new Entry<>(typeHolder, entityHolder, icon);
+        var entry = new Entry<>(typeHolder, entityHolder, icon, defaultRender);
         SLIMES.add(entry);
         return entry;
+    }
+
+    public static <T extends AbstractSlimeEntity> @NotNull Entry<T> register(String name, int priority, int tint, EntityType.EntityFactory<T> factory, Consumer<SlimeType.Builder> config) {
+        return register(name, priority, tint, factory, config, true);
     }
 
     @Contract(pure = true)

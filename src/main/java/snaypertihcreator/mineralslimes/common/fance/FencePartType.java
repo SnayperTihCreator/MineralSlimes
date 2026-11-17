@@ -30,7 +30,7 @@ public class FencePartType<T extends FencePart> {
     }
 
     public ResourceLocation getId() {
-        return ModRegistries.FENCE_PART_TYPES_REGISTRY.getKey(this);
+        return ModRegistries.Registries.FENCE_PART_TYPES.getKey(this);
     }
 
     public String getName() {

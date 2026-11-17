@@ -13,7 +13,7 @@ public class DeferredUpgradeType extends DeferredHolder<VakPakUpgradeType, VakPa
     }
 
     public static DeferredUpgradeType create(ResourceLocation key) {
-        return new DeferredUpgradeType(ResourceKey.create(ModRegistries.VAKPAK_UPGRADE_TYPE, key));
+        return new DeferredUpgradeType(ResourceKey.create(ModRegistries.Keys.VAKPAK_UPGRADE_TYPE, key));
     }
 
     public ResourceLocation id() { return getId(); }

@@ -20,7 +20,7 @@ public class DeferredPartType<T extends FencePart> extends DeferredHolder<FenceP
     }
 
     public static <T extends FencePart> DeferredPartType<T> create(ResourceLocation id) {
-        return new DeferredPartType<>(ResourceKey.create(ModRegistries.FENCE_PART_TYPE, id));
+        return new DeferredPartType<>(ResourceKey.create(ModRegistries.Keys.FENCE_PART_TYPE, id));
     }
 
     public FencePartType<T> type() {

@@ -36,9 +36,9 @@ public record VakPakUpgradeType(ResourceLocation id, int maxLevel) implements Va
     };
 
     public static VakPakUpgradeType byId(ResourceLocation id) {
-        VakPakUpgradeType type = ModRegistries.VAKPAK_UPGRADE_TYPES_REGISTRY.get(id);
+        VakPakUpgradeType type = ModRegistries.Registries.VAKPAK_UPGRADE_TYPES.get(id);
         if (type == null && id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) {
-            type = ModRegistries.VAKPAK_UPGRADE_TYPES_REGISTRY.get(
+            type = ModRegistries.Registries.VAKPAK_UPGRADE_TYPES.get(
                     ResourceLocation.fromNamespaceAndPath(MineralSlimes.MODID, id.getPath())
             );
         }
