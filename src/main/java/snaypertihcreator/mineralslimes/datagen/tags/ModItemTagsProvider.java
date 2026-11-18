@@ -27,12 +27,17 @@ public class ModItemTagsProvider extends ItemTagsProvider {
                 Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE,
 
                 Items.SWEET_BERRIES, Items.GLOW_BERRIES,
-                Items.MELON_SLICE, Items.GLISTERING_MELON_SLICE
+                Items.MELON_SLICE, Items.GLISTERING_MELON_SLICE,
+
+                ModItems.CUBERRY.get(), ModItems.MINT_MANGO.get(), ModItems.PRICKLE_PEAR.get(),
+                ModItems.PHASE_LEMON.get(), ModItems.POLARICHERRY.get()
                 );
 
         tag(ModTags.Items.VEGGIES).add(
                 Items.CARROT, Items.POTATO, Items.BEETROOT,
-                Items.BAKED_POTATO, Items.POISONOUS_POTATO, Items.BEETROOT_SOUP
+                Items.BAKED_POTATO, Items.POISONOUS_POTATO, Items.BEETROOT_SOUP,
+
+                ModItems.ODD_ONION.get(), ModItems.OCA_OCA.get()
         );
 
         tag(ModTags.Items.MEAT).addTag(ItemTags.WOLF_FOOD);

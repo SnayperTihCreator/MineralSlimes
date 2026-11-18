@@ -15,7 +15,7 @@ public final class ModRenderType {
     private static final RenderStateShard.ShaderStateShard QUANTUM_SHADER =
             new RenderStateShard.ShaderStateShard(() -> ClientShaders.quantumSlime);
 
-    public static final Function<ResourceLocation, RenderType> quantumSlime = Util.memoize(resource -> RenderType.create(
+    public static final Function<ResourceLocation, RenderType> quantum = Util.memoize(resource -> RenderType.create(
             "mineralslimes_quantum_slime",
             DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256,
             false, true,

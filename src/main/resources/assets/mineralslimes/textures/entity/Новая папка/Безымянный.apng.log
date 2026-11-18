@@ -1,0 +1,16 @@
+C:/Users/MSI/Programs/ffmpeg-4.3.2-win32/bin/ffmpeg.exe -hide_banner -y -y -r 10 -start_number 0 -start_number_range 1 -i C:/Users/MSI/Documents/Arduino/Project/picOLED/кадр%04d.png -f apng -pred none -plays 0 C:/Users/MSI/Documents/java/MineralSlimes/src/main/resources/assets/mineralslimes/textures/entity/Новая папка/Безымянный.apng
+=====================================================
+Input #0, image2, from 'C:/Users/MSI/Documents/Arduino/Project/picOLED/кадр%04d.png':
+  Duration: 00:00:01.28, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: png, rgba(pc, gbr/unknown/unknown), 64x64 [SAR 3937:3937 DAR 1:1], 25 fps, 25 tbr, 25 tbn
+Stream mapping:
+  Stream #0:0 -> #0:0 (png (native) -> apng (native))
+Press [q] to stop, [?] for help
+Output #0, apng, to 'C:/Users/MSI/Documents/java/MineralSlimes/src/main/resources/assets/mineralslimes/textures/entity/Новая папка/Безымянный.apng':
+  Metadata:
+    encoder         : Lavf62.8.102
+  Stream #0:0: Video: apng, rgba(pc, gbr/unknown/unknown, progressive), 64x64 [SAR 3937:3937 DAR 1:1], q=2-31, 200 kb/s, 10 fps, 10 tbn
+    Metadata:
+      encoder         : Lavc62.23.102 apng
+[out#0/apng @ 000001cff3759fc0] video:18KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.454018%
+frame=   32 fps=0.0 q=-0.0 Lsize=      19KiB time=00:00:03.20 bitrate=  47.6kbits/s speed= 159x elapsed=0:00:00.02    

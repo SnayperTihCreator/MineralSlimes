@@ -32,6 +32,7 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
         slimeIcon(ModSlimes.PINK);
         stubSlimeIcon(ModSlimes.ROCKY);
         stubSlimeIcon(ModSlimes.TUBBY);
+        stubSlimeIcon(ModSlimes.QUANTUM);
 
         basicItem(ModItems.TOOL.get());
 

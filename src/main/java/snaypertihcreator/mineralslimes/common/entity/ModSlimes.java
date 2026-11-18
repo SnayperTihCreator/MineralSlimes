@@ -12,10 +12,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;
 import snaypertihcreator.mineralslimes.MineralSlimes;
-import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
-import snaypertihcreator.mineralslimes.common.entity.slimes.PinkSlimeEntity;
-import snaypertihcreator.mineralslimes.common.entity.slimes.RockySlimeEntity;
-import snaypertihcreator.mineralslimes.common.entity.slimes.TubbySlimeEntity;
+import snaypertihcreator.mineralslimes.common.entity.slimes.*;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 import snaypertihcreator.mineralslimes.common.registries.ModRegistries;
 import snaypertihcreator.mineralslimes.common.slime.Diet;
@@ -106,6 +103,13 @@ public class ModSlimes {
             .diet(Diet.of(Diet.MEAT))
             .products(new SlimeType.Product(ModItems.TUBBY_PLORT, 1))
             .customNormalMood()
+    );
+
+    public static final Entry<QuantumSlimeEntity> QUANTUM = register("quantum", 0, 0xFFFFFFFF, QuantumSlimeEntity::new, b -> b
+            .diet(Diet.of(Diet.FRUIT))
+            .products(new SlimeType.Product(ModItems.QUANTUM_PLORT, 1))
+            .likeFood(() -> ModItems.PHASE_LEMON.get()),
+            false
     );
 
 }
