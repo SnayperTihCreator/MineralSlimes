@@ -1,6 +1,7 @@
 package snaypertihcreator.mineralslimes.client;
 
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -25,6 +26,7 @@ import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
 import snaypertihcreator.mineralslimes.client.models.VakPakModel;
 import snaypertihcreator.mineralslimes.client.texture.AnimatedTextureManager;
 import snaypertihcreator.mineralslimes.common.blockentity.ModBlockEntity;
+import snaypertihcreator.mineralslimes.common.entity.ModEntities;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.items.ModItems;
 
@@ -55,6 +57,7 @@ public class MineralSlimesClient {
                         context -> new SlimeRenderer<>(context, slime.slimeType()));
 
         event.registerEntityRenderer(ModSlimes.QUANTUM.entityType(), QuantumSlimeRenderer::new);
+        event.registerEntityRenderer(ModEntities.WATER_BULLET.get(), ThrownItemRenderer::new);
 
         event.registerBlockEntityRenderer(ModBlockEntity.CORRAL_BE.get(), CorralRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntity.INDUCTOR_BE.get(), InductorRenderer::new);
