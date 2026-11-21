@@ -86,7 +86,7 @@ public final class VakPakSlotRenderers {
 
             gfx.blit(VakPakHud.TEXTURE, x, y, 19, 43, size, size, VakPakHud.TEXTURE_SIZE, VakPakHud.TEXTURE_SIZE);
 
-            float k = Math.clamp(waterSlot.buckets() / (float) waterSlot.capacity(), 0F, 1F);
+            float k = Math.clamp(waterSlot.millibuckets() / (float) waterSlot.milliCapacity(), 0F, 1F);
 
             if (k > 0f) {
                 int fillHeight = Math.max(1, (int) (size * k));
@@ -101,7 +101,7 @@ public final class VakPakSlotRenderers {
                 RenderSystem.disableBlend();
             }
 
-            renderCount(waterSlot.buckets(), gfx, mc, x, y, size, true);
+            renderCount(waterSlot.millibuckets(), gfx, mc, x, y, size, true);
         }
     }
 }

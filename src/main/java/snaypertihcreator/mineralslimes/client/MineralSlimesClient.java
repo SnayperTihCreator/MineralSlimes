@@ -1,7 +1,6 @@
 package snaypertihcreator.mineralslimes.client;
 
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -21,9 +20,11 @@ import snaypertihcreator.mineralslimes.client.block.CorralRenderer;
 import snaypertihcreator.mineralslimes.client.block.InductorRenderer;
 import snaypertihcreator.mineralslimes.client.entity.QuantumSlimeRenderer;
 import snaypertihcreator.mineralslimes.client.entity.SlimeRenderer;
+import snaypertihcreator.mineralslimes.client.entity.WaterBulletRenderer;
 import snaypertihcreator.mineralslimes.client.item.VakPakRenderer;
 import snaypertihcreator.mineralslimes.client.models.FenceModelRegister;
 import snaypertihcreator.mineralslimes.client.models.VakPakModel;
+import snaypertihcreator.mineralslimes.client.models.WaterBulletModel;
 import snaypertihcreator.mineralslimes.client.texture.AnimatedTextureManager;
 import snaypertihcreator.mineralslimes.common.blockentity.ModBlockEntity;
 import snaypertihcreator.mineralslimes.common.entity.ModEntities;
@@ -51,13 +52,18 @@ public class MineralSlimesClient {
     }
 
     @SubscribeEvent
+    public static void onRegisterLayers(EntityRenderersEvent.RegisterLayerDefinitions event){
+        event.registerLayerDefinition(WaterBulletModel.LAYER, WaterBulletModel::createLayer);
+    }
+
+    @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         for (var slime: ModSlimes.all())
             if (slime.defaultRender()) event.registerEntityRenderer(slime.entityType(),
                         context -> new SlimeRenderer<>(context, slime.slimeType()));
 
         event.registerEntityRenderer(ModSlimes.QUANTUM.entityType(), QuantumSlimeRenderer::new);
-        event.registerEntityRenderer(ModEntities.WATER_BULLET.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(ModEntities.WATER_BULLET.get(), WaterBulletRenderer::new);
 
         event.registerBlockEntityRenderer(ModBlockEntity.CORRAL_BE.get(), CorralRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntity.INDUCTOR_BE.get(), InductorRenderer::new);

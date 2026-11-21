@@ -52,8 +52,7 @@ public final class VakPakSlotWater extends VakPakSlot {
     }
 
     public int millibuckets() { return millibuckets; }
-    public int buckets() { return millibuckets / BUCKET_MB; }
-    public int capacity() { return CAPACITY; }
+    public int milliCapacity() { return CAPACITY_MB; }
     public boolean isFull() { return millibuckets >= CAPACITY_MB; }
     public boolean canShoot() { return millibuckets >= SHOOT_COST_MB; }
 
@@ -74,7 +73,7 @@ public final class VakPakSlotWater extends VakPakSlot {
 
     @Override
     public boolean shoot(Level level, Player player, Vec3 spawnPos, Vec3 shootVec) {
-        if (!canShoot()) return false; // воды меньше стоимости выстрела — ничего не тратим
+        if (!canShoot()) return false;
 
         WaterBullet shot = new WaterBullet(ModEntities.WATER_BULLET.get(), level);
         shot.moveTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), player.getXRot());
