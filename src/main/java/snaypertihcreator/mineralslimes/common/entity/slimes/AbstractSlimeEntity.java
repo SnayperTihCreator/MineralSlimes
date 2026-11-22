@@ -30,9 +30,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Optional;
 
 public abstract class AbstractSlimeEntity extends PathfinderMob implements GeoEntity {
-
-    public enum FaceExpression { NORMAL, HUNGRY, OPEN, CHEW }
-
     public static final EntityDataAccessor<Integer> DATA_STATE =
             SynchedEntityData.defineId(AbstractSlimeEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> DATA_SATURATION =

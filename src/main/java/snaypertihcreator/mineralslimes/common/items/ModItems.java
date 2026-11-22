@@ -17,6 +17,7 @@ public final class ModItems {
     public static final DeferredItem<?> ROCKY_PLORT = createPlort("rocky");
     public static final DeferredItem<?> TUBBY_PLORT = createPlort("tubby");
     public static final DeferredItem<?> QUANTUM_PLORT = createPlort("quantum");
+    public static final DeferredItem<?> PUDDLE_PLORT = createPlort("puddle");
 
     public static final DeferredItem<?> ODD_ONION = createFood("odd_onion", ModFoods.ODD_ONION_FOOD);
     public static final DeferredItem<?> CUBERRY = createFood("cuberry", ModFoods.CUBERRY_FOOD);

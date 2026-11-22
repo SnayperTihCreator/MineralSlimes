@@ -20,6 +20,7 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
         basicSubFolderItem(ModItems.ROCKY_PLORT, "plorts");
         basicSubFolderItem(ModItems.TUBBY_PLORT, "plorts");
         basicSubFolderItem(ModItems.QUANTUM_PLORT, "plorts");
+        basicSubFolderItem(ModItems.PUDDLE_PLORT, "plorts");
 
         basicSubFolderItem(ModItems.ODD_ONION, "food");
         basicSubFolderItem(ModItems.CUBERRY, "food");
@@ -33,8 +34,9 @@ public class ModItemModelProvider extends ExtraItemModelProvider {
         stubSlimeIcon(ModSlimes.ROCKY);
         stubSlimeIcon(ModSlimes.TUBBY);
         stubSlimeIcon(ModSlimes.QUANTUM);
+        stubSlimeIcon(ModSlimes.PUDDLE);
 
-        basicItem(ModItems.TOOL.get());
+        basicHandheldItem(ModItems.TOOL);
 
         simpleBlockItem(ModBlocks.CORRAL.get());
         simpleBlockItem(ModBlocks.INDUCTOR.get(), 0.75F);

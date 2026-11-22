@@ -11,8 +11,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import snaypertihcreator.mineralslimes.common.ModDataComponents;
 import snaypertihcreator.mineralslimes.common.ModTags;
-import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
-import snaypertihcreator.mineralslimes.common.blocks.InductorBlock;
 import snaypertihcreator.mineralslimes.common.blocks.PartHolderBlock;
 import snaypertihcreator.mineralslimes.common.entity.ModSlimes;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;

@@ -5,9 +5,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import snaypertihcreator.mineralslimes.MineralSlimes;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public record SlimeType(
@@ -31,8 +36,8 @@ public record SlimeType(
         double attackDamage,
         float width,
         float height,
-        boolean customNormalMood,
-        List<String> extraAnimations
+        List<String> extraAnimations,
+        Map<String, String> moods
 ) {
     @SuppressWarnings("unused")
     public record Product(Supplier<? extends Item> item, int count) {
@@ -46,7 +51,8 @@ public record SlimeType(
         public ItemStack create(int count){ return new ItemStack(item.get(), count); }
     }
 
-    public static Builder builder(String name, int priority, int tint) {
+    @Contract("_, _, _ -> new")
+    public static @NotNull Builder builder(String name, int priority, int tint) {
         return new Builder(MineralSlimes.modLoc(name), priority, Component.translatable("entity." + MineralSlimes.MODID + "." + name + "_slime"), name + "_slime", tint);
     }
 
@@ -78,8 +84,8 @@ public record SlimeType(
         private float width = 1.0F;
         private float height = 1.0F;
 
-        boolean customNormalMood = false;
-        List<String> extraAnimations = List.of();
+        private List<String> extraAnimations = List.of();
+        private final Map<String, String> moods = new HashMap<>();
 
         private Builder(ResourceLocation id, int priority, Component displayName, String modelKey, int tint) {
             this.id = id;
@@ -90,7 +96,13 @@ public record SlimeType(
         }
 
         public Builder customNormalMood(){
-            this.customNormalMood = true;
+            customMood("normal");
+            return this;
+        }
+
+        public Builder customMood(String... targets){
+            for (var target: targets)
+                moods.put(target, "%s_%s".formatted(target, id.getPath()));
             return this;
         }
 
@@ -167,7 +179,7 @@ public record SlimeType(
                     maxSaturation, hungryThreshold, saturationTickRate,
                     eatSpeed, searchRadius, eatDurationTicks, eatGrabTick,
                     health, speed, attackDamage, width, height,
-                    customNormalMood, extraAnimations);
+                    extraAnimations, Collections.unmodifiableMap(moods));
         }
     }
 }

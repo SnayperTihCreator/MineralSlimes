@@ -15,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import snaypertihcreator.mineralslimes.MineralSlimes;
 import snaypertihcreator.mineralslimes.client.models.SlimeModel;
 import snaypertihcreator.mineralslimes.common.ColorUtil;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
@@ -84,6 +85,10 @@ public abstract class AbstractSlimeRenderer<T extends AbstractSlimeEntity> exten
 
     protected UvRect fullTexture(ResourceLocation texture) {
         IntIntPair dim = textureDimensions(texture);
+        if (dim == null){
+            MineralSlimes.LOGGER.error("Texture Dimensions not found for {}!", texture);
+            return new UvRect(0, 0, 13, 12);
+        }
         return new UvRect(0, 0, dim.firstInt(), dim.secondInt());
     }
 

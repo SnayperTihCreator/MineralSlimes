@@ -4,7 +4,8 @@ import net.minecraft.world.food.FoodProperties;
 
 // TODO Возможно создать эффекты и поменять параметры
 
-public class ModFoods {
+public final class ModFoods {
+    private ModFoods() {}
 
     public static final FoodProperties ODD_ONION_FOOD = new FoodProperties.Builder()
             .nutrition(6) // (1 единица = полноги)

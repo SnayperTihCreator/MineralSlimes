@@ -1,6 +1,7 @@
 package snaypertihcreator.mineralslimes.common.entity.slime;
 
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
+import snaypertihcreator.mineralslimes.common.slime.FaceExpression;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
@@ -13,7 +14,7 @@ public class SlimeAnimations {
 
     private final AbstractSlimeEntity slime;
     private final Map<String, RawAnimation> cache = new HashMap<>();
-    private AbstractSlimeEntity.FaceExpression keyframeFace;
+    private FaceExpression keyframeFace;
 
     public SlimeAnimations(AbstractSlimeEntity slime) {
         this.slime = slime;
@@ -46,12 +47,12 @@ public class SlimeAnimations {
 
     private void handle(String instruction) {
         this.keyframeFace = switch (instruction) {
-            case "face open"   -> AbstractSlimeEntity.FaceExpression.OPEN;
-            case "face chew"   -> AbstractSlimeEntity.FaceExpression.CHEW;
+            case "face open"   -> FaceExpression.OPEN;
+            case "face chew"   -> FaceExpression.CHEW;
             case "face normal" -> null;
             default -> this.keyframeFace;
         };
     }
 
-    public AbstractSlimeEntity.FaceExpression keyframeFace() { return this.keyframeFace; }
+    public FaceExpression keyframeFace() { return this.keyframeFace; }
 }

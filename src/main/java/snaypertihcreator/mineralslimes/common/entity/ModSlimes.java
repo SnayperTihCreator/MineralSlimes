@@ -92,24 +92,30 @@ public class ModSlimes {
             .products(new SlimeType.Product(ModItems.PINK_PLORT, 1))
     );
 
-    public static final Entry<RockySlimeEntity> ROCKY = register("rocky", 2, 0xFFCCCEFF, RockySlimeEntity::new, b -> b
+    public static final Entry<QuantumSlimeEntity> QUANTUM = register("quantum", 2, 0xFFFFFFFF, QuantumSlimeEntity::new, b -> b
+                    .diet(Diet.of(Diet.FRUIT))
+                    .products(new SlimeType.Product(ModItems.QUANTUM_PLORT, 1))
+                    .likeFood(() -> ModItems.PHASE_LEMON.get()),
+            false
+    );
+
+    public static final Entry<RockySlimeEntity> ROCKY = register("rocky", 3, 0xFFCCCEFF, RockySlimeEntity::new, b -> b
             .diet(Diet.of(Diet.VEGGIE))
             .likeFood(() -> Items.BEETROOT)
             .products(new SlimeType.Product(ModItems.ROCKY_PLORT, 1))
             .triggerable("roll")
     );
 
-    public static final Entry<TubbySlimeEntity> TUBBY = register("tubby", 0, 0xFFFFFFFF, TubbySlimeEntity::new, b -> b
+    public static final Entry<TubbySlimeEntity> TUBBY = register("tubby", 4, 0xFFFFFFFF, TubbySlimeEntity::new, b -> b
             .diet(Diet.of(Diet.MEAT))
             .products(new SlimeType.Product(ModItems.TUBBY_PLORT, 1))
             .customNormalMood()
     );
 
-    public static final Entry<QuantumSlimeEntity> QUANTUM = register("quantum", 0, 0xFFFFFFFF, QuantumSlimeEntity::new, b -> b
-            .diet(Diet.of(Diet.FRUIT))
-            .products(new SlimeType.Product(ModItems.QUANTUM_PLORT, 1))
-            .likeFood(() -> ModItems.PHASE_LEMON.get()),
-            false
+    public static final Entry<PuddleSlimeEntity> PUDDLE = register("puddle", -1, 0xFFFFFFFF, PuddleSlimeEntity::new, b -> b
+            .diet(Diet.of(Diet.WATER))
+            .products(new SlimeType.Product(ModItems.PUDDLE_PLORT, 1))
+            .customMood("normal", "chew", "open", "hungry")
     );
 
 }

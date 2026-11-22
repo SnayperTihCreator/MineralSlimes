@@ -3,11 +3,14 @@ package snaypertihcreator.mineralslimes.client.entity;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 import snaypertihcreator.mineralslimes.common.entity.slimes.AbstractSlimeEntity;
 import snaypertihcreator.mineralslimes.common.slime.SlimeType;
 import software.bernie.geckolib.cache.object.GeoBone;
+import snaypertihcreator.mineralslimes.common.slime.FaceExpression;
 
-import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,32 +20,34 @@ public class SlimeRenderer<T extends AbstractSlimeEntity> extends AbstractSlimeR
     private static final String FACE = "face";
     private static final String COVER = "cover";
 
-    private static final ResourceLocation TEX_HUNGRY = modLoc("textures/entity/mood/hungry.png");
-    private static final ResourceLocation TEX_OPEN = modLoc("textures/entity/mood/open.png");
-    private static final ResourceLocation TEX_CHEW = modLoc("textures/entity/mood/chew.png");
+    private static final List<FaceExpression> faces = List.of(
+            FaceExpression.NORMAL, FaceExpression.OPEN,
+            FaceExpression.HUNGRY, FaceExpression.CHEW
+    );
+
     private static final ResourceLocation TEX_NORMAL = modLoc("textures/entity/mood/normal.png");
 
-    private final Map<AbstractSlimeEntity.FaceExpression, ResourceLocation> moods;
+    private final Map<FaceExpression, ResourceLocation> moods = new HashMap<>();
     private final int tint;
+
+    private void handleCustomMood(SlimeType type, FaceExpression face){
+        @Nullable String texId = type.moods().getOrDefault(face.getTextureName(), null);
+        if (texId != null) moods.put(face, modLoc("textures/entity/mood/%s.png".formatted(texId)));
+        else moods.put(face, modLoc("textures/entity/mood/%s.png".formatted(face.getTextureName())));
+    }
 
     public SlimeRenderer(EntityRendererProvider.Context ctx, SlimeType type) {
         super(ctx, type);
         tint = type.tint();
-        ResourceLocation tex_normal =
-                type.customNormalMood() ? modLoc("textures/entity/mood/%s_normal.png".formatted(type.modelKey())) : TEX_NORMAL;
-        this.moods = Map.of(
-                AbstractSlimeEntity.FaceExpression.NORMAL,  tex_normal,
-                AbstractSlimeEntity.FaceExpression.HUNGRY,   TEX_HUNGRY,
-                AbstractSlimeEntity.FaceExpression.OPEN, TEX_OPEN,
-                AbstractSlimeEntity.FaceExpression.CHEW, TEX_CHEW);
+        for (var face : faces) handleCustomMood(type, face);
     }
 
-    private AbstractSlimeEntity.FaceExpression faceOf(T slime) {
-        AbstractSlimeEntity.FaceExpression kf = slime.animations().keyframeFace();
+    private FaceExpression faceOf(T slime) {
+        FaceExpression kf = slime.animations().keyframeFace();
         if (kf != null) return kf;
         return switch (slime.vitals().getState()) {
-            case NORMAL -> AbstractSlimeEntity.FaceExpression.NORMAL;
-            case HUNGRY -> AbstractSlimeEntity.FaceExpression.HUNGRY;
+            case NORMAL -> FaceExpression.NORMAL;
+            case HUNGRY -> FaceExpression.HUNGRY;
         };
     }
 

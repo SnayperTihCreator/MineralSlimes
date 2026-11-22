@@ -33,6 +33,12 @@ public abstract class ExtraItemModelProvider extends ItemModelProvider {
                 ResourceLocation.fromNamespaceAndPath(block.getNamespace(), "block/" + block.getPath())), scale);
     }
 
+    protected ItemModelBuilder basicHandheldItem(@NotNull DeferredItem<?> holder) {
+        ResourceLocation id = holder.getId();
+        return getBuilder(id.toString()).parent(new ModelFile.UncheckedModelFile("item/handheld"))
+                .texture("layer0", ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "item/" + id.getPath()));
+    }
+
     protected ItemModelBuilder withBlockDisplay(@NotNull ItemModelBuilder builder, float scale){
         return builder.transforms()
                 .transform(ItemDisplayContext.GUI)
