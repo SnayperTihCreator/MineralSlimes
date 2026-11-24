@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import snaypertihcreator.mineralslimes.common.blocks.CorralBlock;
 import snaypertihcreator.mineralslimes.common.blocks.InductorBlock;
 import snaypertihcreator.mineralslimes.common.fance.FencePart;
@@ -32,6 +33,8 @@ public class InductorBlockEntity extends CorralBlockEntity {
     public static final double WALL_SURFACE = 0.06F;
     public static final double WALL_DETECT = 0.5F;
     public static final double WALL_HEIGHT = 0.95;
+    public static final double WALL_END = EmitterPart.ATTACHED_RADIUS;
+    private static final double WALL_DEPTH = 0.05;
 
     private record EmitterRef(BlockPos pos, float angle) {}
 
@@ -252,6 +255,31 @@ public class InductorBlockEntity extends CorralBlockEntity {
         Vec3 a = Vec3.atCenterOf(getBlockPos());
         Vec3 b = Vec3.atCenterOf(otherInd);
         return new AABB(Math.min(a.x, b.x) - 0.6, y0 - 0.5, Math.min(a.z, b.z) - 0.6, Math.max(a.x, b.x) + 0.6, y1, Math.max(a.z, b.z) + 0.6);
+    }
+
+    @Nullable
+    public AABB fieldVolume(Level level, BlockPos other) {
+        Vec3 a = Vec3.atCenterOf(getBlockPos());
+        Vec3 b = Vec3.atCenterOf(other);
+        double dx = b.x - a.x, dz = b.z - a.z;
+        double len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 1.0) return null;
+
+        double drawn = len - WALL_END * 2;
+        if (drawn < 0.25) return null;
+
+        double h = columnHeight(level, getBlockPos());
+        double y0 = getBlockPos().getY() - h;
+        double y1 = y0 + (h + 1) * WALL_HEIGHT;
+
+        double nx = dx / len, nz = dz / len;
+        double midX = (a.x + b.x) * 0.5, midZ = (a.z + b.z) * 0.5;
+        double halfLen = drawn * 0.5;
+
+        double ex = Math.abs(nx) * halfLen + Math.abs(nz) * WALL_DEPTH;
+        double ez = Math.abs(nz) * halfLen + Math.abs(nx) * WALL_DEPTH;
+
+        return new AABB(midX - ex, y0, midZ - ez, midX + ex, y1, midZ + ez);
     }
 
     private void collideWithPlane(LivingEntity e, BlockPos otherInd, ServerLevel level) {

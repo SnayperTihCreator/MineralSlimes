@@ -51,11 +51,24 @@ public final class ClientShaders {
     }
 
     public static final ResourceLocation QuantumSlimeID = modLoc("quantum_slime");
-    public static ShaderInstance quantumSlime;
+    public static final ResourceLocation FieldWallID = modLoc("field_wall");
+
+    public static ShaderInstance glitchSlime;
+    public static ShaderInstance fieldWall;
+
+
 
     @SubscribeEvent
     public static void onRegisterShaders(@NotNull RegisterShadersEvent event) throws IOException {
-        var loader = new QuantumSlimeShader(event.getResourceProvider(), QuantumSlimeID, DefaultVertexFormat.NEW_ENTITY);
-        event.registerShader(loader, shader -> quantumSlime=shader);
+        event.registerShader(new QuantumSlimeShader(event.getResourceProvider(), QuantumSlimeID, DefaultVertexFormat.NEW_ENTITY),
+                shader -> glitchSlime =shader);
+        event.registerShader(new ShaderInstance(event.getResourceProvider(), FieldWallID, DefaultVertexFormat.POSITION_TEX_COLOR),
+                shader -> fieldWall=shader);
     }
+
+
+
+
+
+
 }
